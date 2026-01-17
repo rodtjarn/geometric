@@ -1,0 +1,2890 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Category Theory → Causal ML: Interactive Journey</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        header h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+        
+        header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+        
+        .progress-bar {
+            background: #e2e8f0;
+            height: 8px;
+            position: relative;
+        }
+        
+        .progress-fill {
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            height: 100%;
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        
+        .nav-tabs {
+            display: flex;
+            background: #f7fafc;
+            border-bottom: 2px solid #e2e8f0;
+            overflow-x: auto;
+        }
+        
+        .nav-tab {
+            padding: 15px 25px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-size: 1em;
+            font-weight: 500;
+            color: #4a5568;
+            position: relative;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+        
+        .nav-tab:hover {
+            background: #edf2f7;
+        }
+        
+        .nav-tab.active {
+            color: #667eea;
+            font-weight: 600;
+        }
+        
+        .nav-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .level {
+            display: none;
+        }
+        
+        .level.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .section {
+            margin-bottom: 30px;
+            padding: 25px;
+            background: #f8fafc;
+            border-radius: 12px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .section h3 {
+            color: #2d3748;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+        
+        .section p {
+            line-height: 1.7;
+            color: #4a5568;
+            margin-bottom: 15px;
+        }
+        
+        .example-box {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border: 2px solid #e2e8f0;
+        }
+        
+        .interactive {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            padding: 25px;
+            border-radius: 12px;
+            margin: 20px 0;
+            border: 2px solid #f59e0b;
+        }
+        
+        .interactive h4 {
+            color: #92400e;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .interactive h4::before {
+            content: '⚡';
+            font-size: 1.3em;
+        }
+        
+        input[type="text"], input[type="number"], select {
+            padding: 10px 15px;
+            border: 2px solid #cbd5e0;
+            border-radius: 6px;
+            font-size: 1em;
+            margin: 5px;
+            width: auto;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin: 5px;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .result {
+            background: #e0f2fe;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 15px;
+            border-left: 4px solid #0284c7;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .visual-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 15px 0;
+            min-height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #e2e8f0;
+        }
+        
+        canvas {
+            border: 1px solid #cbd5e0;
+            border-radius: 4px;
+        }
+        
+        .key-insight {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            border-left: 4px solid #3b82f6;
+        }
+        
+        .key-insight h4 {
+            color: #1e40af;
+            margin-bottom: 10px;
+        }
+        
+        .code {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+        
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #e2e8f0;
+        }
+        
+        .badge {
+            display: inline-block;
+            background: #10b981;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>From Algebra to Causal AI 🎯</h1>
+            <p>An Interactive Journey Through Category Theory and Machine Learning</p>
+        </header>
+        
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressBar"></div>
+        </div>
+        
+        <div class="nav-tabs" id="navTabs">
+            <button class="nav-tab active" data-level="0">🎯 Overview</button>
+            <button class="nav-tab" data-level="1">📚 Sets & Functions</button>
+            <button class="nav-tab" data-level="2">🔧 Algebra</button>
+            <button class="nav-tab" data-level="3">🎭 Groups</button>
+            <button class="nav-tab" data-level="4">📐 Geometry</button>
+            <button class="nav-tab" data-level="5">🔄 Categories</button>
+            <button class="nav-tab" data-level="6">🧠 Causal ML</button>
+            <button class="nav-tab" data-level="7">🚀 State-of-Art</button>
+        </div>
+        
+        <div class="content">
+            <!-- Level 0: Overview -->
+            <div class="level active" data-level="0">
+                <div class="section">
+                    <h3>Why This Journey Matters</h3>
+                    <p>Current deep learning excels at finding patterns in data, but struggles with:</p>
+                    <ul style="line-height: 2; color: #4a5568; margin-left: 30px;">
+                        <li><strong>Causation vs Correlation:</strong> Learning "ice cream sales → drowning" instead of "summer → both"</li>
+                        <li><strong>Distribution Shift:</strong> Models break when the world changes</li>
+                        <li><strong>Interventions:</strong> Can't answer "what if we do X?"</li>
+                        <li><strong>Composability:</strong> Can't reason about combining transformations</li>
+                    </ul>
+                    
+                    <div class="key-insight">
+                        <h4>The Core Insight</h4>
+                        <p><strong>Category theory provides the mathematical foundation for thinking about structure, composition, and invariance</strong> - exactly what we need for causal reasoning!</p>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h3>The Learning Stack</h3>
+                    <div class="example-box">
+                        <h4 style="color: #2d3748; margin-bottom: 15px;">Level 1: Sets & Functions</h4>
+                        <p style="color: #4a5568;">Foundation of mathematics - elements and mappings between them</p>
+                        <p style="color: #64748b; font-style: italic;">Example: {cat, dog} → {mammal}</p>
+                    </div>
+                    
+                    <div class="example-box">
+                        <h4 style="color: #2d3748; margin-bottom: 15px;">Level 2: Algebraic Structures</h4>
+                        <p style="color: #4a5568;">Sets with operations that satisfy useful properties</p>
+                        <p style="color: #64748b; font-style: italic;">Example: Numbers with addition (associative, commutative)</p>
+                    </div>
+                    
+                    <div class="example-box">
+                        <h4 style="color: #2d3748; margin-bottom: 15px;">Level 3: Group Theory</h4>
+                        <p style="color: #4a5568;">Study of symmetries and transformations</p>
+                        <p style="color: #64748b; font-style: italic;">Example: Rotations of a square preserve its shape</p>
+                    </div>
+                    
+                    <div class="example-box">
+                        <h4 style="color: #2d3748; margin-bottom: 15px;">Level 4: Geometric Models</h4>
+                        <p style="color: #4a5568;">How symmetries act on spaces</p>
+                        <p style="color: #64748b; font-style: italic;">Example: CNN uses translation symmetry in images</p>
+                    </div>
+                    
+                    <div class="example-box">
+                        <h4 style="color: #2d3748; margin-bottom: 15px;">Level 5: Category Theory</h4>
+                        <p style="color: #4a5568;">Abstract study of structure-preserving mappings</p>
+                        <p style="color: #64748b; font-style: italic;">Example: Functors map between different domains</p>
+                    </div>
+                    
+                    <div class="example-box">
+                        <h4 style="color: #2d3748; margin-bottom: 15px;">Level 6: Causal Reasoning</h4>
+                        <p style="color: #4a5568;">Using structure to understand cause and effect</p>
+                        <p style="color: #64748b; font-style: italic;">Example: Pearl's do-calculus in categorical terms</p>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h3>How to Use This Tool</h3>
+                    <p>🔹 Use the tabs above to navigate between levels</p>
+                    <p>🔹 Each level builds on previous ones - don't skip ahead!</p>
+                    <p>🔹 Complete the interactive exercises (⚡ symbols)</p>
+                    <p>🔹 Track your progress with the blue bar at the top</p>
+                    <p>🔹 Click "Next" at the bottom of each section to advance</p>
+                </div>
+            </div>
+            
+            <!-- Level 1: Sets & Functions -->
+            <div class="level" data-level="1">
+                <div class="section">
+                    <h3>Sets: The Foundation</h3>
+                    <p>A <strong>set</strong> is just a collection of distinct elements. That's it!</p>
+                    
+                    <div class="example-box">
+                        <h4 style="color: #2d3748;">Examples:</h4>
+                        <p>A = {1, 2, 3, 4, 5} - set of small numbers</p>
+                        <p>B = {cat, dog, bird} - set of animals</p>
+                        <p>C = {red, green, blue} - set of colors</p>
+                    </div>
+                    
+                    <div class="interactive">
+                        <h4>Try It: Create Your Own Set</h4>
+                        <p>Enter elements separated by commas:</p>
+                        <input type="text" id="setInput" placeholder="apple, banana, orange">
+                        <button onclick="createSet()">Create Set</button>
+                        <div id="setResult" class="result" style="display:none;"></div>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h3>Functions: Mappings Between Sets</h3>
+                    <p>A <strong>function</strong> f: A → B maps each element in set A to exactly one element in set B.</p>
+                    
+                    <div class="key-insight">
+                        <h4>Why Functions Matter for ML</h4>
+                        <p>Every ML model is fundamentally a function: f(input data) = output prediction</p>
+                        <p>Understanding function composition is key to understanding deep learning!</p>
+                    </div>
+                    
+                    <div class="interactive">
+                        <h4>Try It: Function Composition</h4>
+                        <p>Let's compose two simple functions:</p>
+                        <p>f(x) = x + 3 and g(x) = x × 2</p>
+                        <p>What is (g ∘ f)(x) = g(f(x))?</p>
+                        <input type="number" id="composeInput" placeholder="Enter x">
+                        <button onclick="computeComposition()">Compute</button>
+                        <div id="composeResult" class="result" style="display:none;"></div>
+                    </div>
+                    
+                    <div class="example-box">
+                        <h4 style="color: #2d3748;">Connection to Deep Learning</h4>
+                        <p style="color: #4a5568;">A neural network with layers L1, L2, L3 is just:</p>
+                        <div class="code">output = L3(L2(L1(input)))</div>
+                        <p style="color: #4a5568;">This is function composition! Understanding how compositions work is essential.</p>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h3>Properties of Functions</h3>
+                    <div class="example-box">
+                        <h4 style="color: #2d3748;">Injective (One-to-One)</h4>
+                        <p>Different inputs → Different outputs</p>
+                        <p>Example: f(x) = x + 1 is injective</p>
+                        <p style="color: #64748b; font-style: italic;">ML relevance: Important for invertible transformations (normalizing flows)</p>
+                    </div>
+                    
+                    <div class="example-box">
+                        <h4 style="color: #2d3748;">Surjective (Onto)</h4>
+                        <p>Every output is hit by some input</p>
+                        <p>Example: f: ℝ → ℝ, f(x) = x² is NOT surjective (no negative outputs)</p>
+                    </div>
+                    
+                    <div class="example-box">
+                        <h4 style="color: #2d3748;">Bijective</h4>
+                        <p>Both injective AND surjective - perfect pairing!</p>
+                        <p>Example: f(x) = 2x is bijective from ℝ to ℝ</p>
+                        <p style="color: #64748b; font-style: italic;">ML relevance: Bijections are invertible - crucial for autoencoders</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Level 2: Algebraic Structures -->
+            <div class="level" data-level="2">
+                <div class="section">
+                    <h3>What is Algebra?</h3>
+                    <p>Algebra = Set + Operations + Properties</p>
+                    <p>We take a set and add operations (like +, ×) that satisfy nice properties.</p>
+                    
+                    <div class="key-insight">
+                        <h4>The Big Idea</h4>
+                        <p>Different operations have different properties. By studying these properties, we can understand what we can and cannot do with our operations.</p>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h3>Key Properties</h3>
+                    
+                    <div class="example-box">
+                        <h4 style="color: #2d3748;">1. Closure</h4>
+                        <p>Combining elements gives you another element in the set</p>
+                        <div class="code">If a, b ∈ S, then a ⊕ b ∈ S</div>
+                        <p style="color: #64748b; margin-top: 10px;">Example: 3 + 5 = 8 (all integers)</p>
+                    </div>
+                    
+                    <div class="example-box">
+                        <h4 style="color: #2d3748;">2. Associativity</h4>
+                        <p>Order of operations doesn't matter (parentheses don't matter)</p>
+                        <div class="code">(a ⊕ b) ⊕ c = a ⊕ (b ⊕ c)</div>
+                        <p style="color: #64748b; margin-top: 10px;">Example: (2 + 3) + 4 = 2 + (3 + 4) = 9</p>
+                    </div>
+                    
+                    <div class="example-box">
+                        <h4 style="color: #2d3748;">3. Commutativity</h4>
+                        <p>Order of operands doesn't matter</p>
+                        <div class="code">a ⊕ b = b ⊕ a</div>
+                        <p style="color: #64748b; margin-top: 10px;">Example: 3 × 5 = 5 × 3 = 15</p>
+                        <p style="color: #f59e0b; margin-top: 10px;">⚠️ Matrix multiplication is NOT commutative!</p>
+                    </div>
+                    
+                    <div class="interactive">
+                        <h4>Test: Is Matrix Multiplication Commutative?</h4>
+                        <p>Try multiplying these 2×2 matrices in both orders:</p>
+                        <div style="display: flex; gap: 20px; margin: 15px 0;">
+                            <div>
+                                <p>Matrix A:</p>
+                                <input type="number" id="a11" value="1" style="width: 50px;"> <input type="number" id="a12" value="2" style="width: 50px;"><br>
+                                <input type="number" id="a21" value="3" style="width: 50px;"> <input type="number" id="a22" value="4" style="width: 50px;">
+                            </div>
+                            <div>
+                                <p>Matrix B:</p>
+                                <input type="number" id="b11" value="2" style="width: 50px;"> <input type="number" id="b12" value="0" style="width: 50px;"><br>
+                                <input type="number" id="b21" value="1" style="width: 50px;"> <input type="number" id="b22" value="2" style="width: 50px;">
+                            </div>
+                        </div>
+                        <button onclick="multiplyMatrices()">Compute A×B and B×A</button>
+                        <div id="matrixResult" class="result" style="display:none;"></div>
+                    </div>
+                    
+                    <div class="example-box">
+                        <h4 style="color: #2d3748;">4. Identity Element</h4>
+                        <p>Special element that doesn't change others</p>
+                        <div class="code">a ⊕ e = e ⊕ a = a</div>
+                        <p style="color: #64748b; margin-top: 10px;">Example: 0 for addition, 1 for multiplication</p>
+                    </div>
+                    
+                    <div class="example-box">
+                        <h4 style="color: #2d3748;">5. Inverse Elements</h4>
+                        <p>For each element, there exists an inverse that gives the identity</p>
+                        <div class="code">a ⊕ a⁻¹ = e</div>
+                        <p style="color: #64748b; margin-top: 10px;">Example: 5 + (-5) = 0, or 3 × (1/3) = 1</p>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h3>Why Properties Matter for ML</h3>
+                    <div class="key-insight">
+                        <h4>Deep Learning Example</h4>
+                        <p><strong>Associativity</strong> lets us reorganize computations:</p>
+                        <div class="code">
+((W₃ × W₂) × W₁) × x = W₃ × (W₂ × (W₁ × x))
+                        </div>
+                        <p style="margin-top: 10px;">This is why backpropagation works - we can compute gradients in any order!</p>
+                    </div>
+                    
+                    <div class="key-insight">
+                        <h4>Why Non-Commutativity Matters</h4>
+                        <p>In transformers, the order of attention operations matters!</p>
+                        <p>Q × K^T ≠ K^T × Q</p>
+                        <p>This is why we care about which way we multiply - sequence matters.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Level 3: Group Theory -->
+            <div class="level" data-level="3">
+                <div class="section">
+                    <h3>What is a Group?</h3>
+                    <p>A <strong>group</strong> is a set G with an operation ⊕ that satisfies ALL of these:</p>
+                    <ol style="line-height: 2; color: #4a5568; margin-left: 30px;">
+                        <li><strong>Closure:</strong> a ⊕ b ∈ G</li>
+                        <li><strong>Associativity:</strong> (a ⊕ b) ⊕ c = a ⊕ (b ⊕ c)</li>
+                        <li><strong>Identity:</strong> There exists e such that a ⊕ e = a</li>
+                        <li><strong>Inverse:</strong> For each a, there exists a⁻¹ such that a ⊕ a⁻¹ = e</li>
+                    </ol>
+                    
+                    <div class="key-insight">
+                        <h4>Intuition: Groups are Symmetries</h4>
+                        <p>Think of a group as all the ways you can transform an object while preserving its structure.</p>
+                        <p><strong>Every symmetry corresponds to a group element!</strong></p>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h3>Simple Example: Integers Under Addition</h3>
+                    <div class="example-box">
+                        <p><strong>Set:</strong> ℤ = {..., -2, -1, 0, 1, 2, ...}</p>
+                        <p><strong>Operation:</strong> + (addition)</p>
+                        <p style="margin-top: 10px;">Check the properties:</p>
+                        <p>✓ Closure: 3 + 5 = 8 (still an integer)</p>
+                        <p>✓ Associative: (1 + 2) + 3 = 1 + (2 + 3)</p>
+                        <p>✓ Identity: 0 (any number + 0 = that number)</p>
+                        <p>✓ Inverse: For 5, the inverse is -5 (because 5 + (-5) = 0)</p>
+                    </div>
+                    
+                    <div class="interactive">
+                        <h4>Verify Group Properties</h4>
+                        <p>Let's check if a set forms a group:</p>
+                        <select id="groupExample">
+                            <option value="integers-add">Integers under addition</option>
+                            <option value="integers-mult">Integers under multiplication</option>
+                            <option value="rotations">Rotations of a square</option>
+                        </select>
+                        <button onclick="checkGroup()">Check Properties</button>
+                        <div id="groupCheck" class="result" style="display:none;"></div>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h3>Visual Example: Symmetries of a Square</h3>
+                    <p>A square has 8 symmetries (transformations that preserve its shape):</p>
+                    
+                    <div class="visual-container">
+                        <canvas id="squareCanvas" width="400" height="400"></canvas>
+                    </div>
+                    
+                    <div class="interactive">
+                        <h4>Explore Square Symmetries</h4>
+                        <button onclick="rotateSquare(90)">Rotate 90°</button>
+                        <button onclick="rotateSquare(180)">Rotate 180°</button>
+                        <button onclick="rotateSquare(270)">Rotate 270°</button>
+                        <button onclick="flipSquare('vertical')">Flip Vertically</button>
+                        <button onclick="flipSquare('horizontal')">Flip Horizontally</button>
+                        <button onclick="resetSquare()">Reset</button>
+                        <div id="symmetryLog" class="result" style="display:none;"></div>
+                    </div>
+                    
+                    <div class="key-insight">
+                        <h4>Why This Matters for ML</h4>
+                        <p><strong>CNNs use translation symmetry:</strong> If a cat detector works on the left side of an image, it should work on the right too!</p>
+                        <p><strong>Equivariant networks</strong> explicitly build in these symmetries, making models more efficient and generalizable.</p>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h3>Group Homomorphisms: Structure-Preserving Maps</h3>
+                    <p>A <strong>homomorphism</strong> φ: G → H is a function that preserves the group structure:</p>
+                    <div class="code">φ(a ⊕ b) = φ(a) ⊕ φ(b)</div>
+                    
+                    <div class="example-box">
+                        <h4 style="color: #2d3748;">Example: Exponential Function</h4>
+                        <p>φ: (ℝ, +) → (ℝ⁺, ×) where φ(x) = e^x</p>
+                        <p>φ(x + y) = e^(x+y) = e^x × e^y = φ(x) × φ(y)</p>
+                        <p style="color: #64748b; margin-top: 10px;">This turns addition into multiplication!</p>
+                    </div>
+                    
+                    <div class="key-insight">
+                        <h4>Connection to Causality</h4>
+                        <p>Homomorphisms preserve structure. In causal reasoning, we want to understand what structures are preserved under interventions!</p>
+                        <p>This is the bridge to category theory.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Level 4: Geometric Models & Symmetries -->
+            <div class="level" data-level="4">
+                <div class="section">
+                    <h3>From Algebra to Geometry</h3>
+                    <p>Groups describe <strong>transformations</strong>. But transformations of what?</p>
+                    <p>This is where <strong>geometric models</strong> come in - spaces on which groups act.</p>
+                    
+                    <div class="key-insight">
+                        <h4>The Connection</h4>
+                        <p>Group Theory: What transformations exist?</p>
+                        <p>Geometric Models: What do they transform?</p>
+                        <p>Equivariance: How does transformation of input relate to transformation of output?</p>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h3>Group Actions</h3>
+                    <p>A <strong>group action</strong> is how a group G acts on a set X:</p>
+                    <div class="code">· : G × X → X</div>
+                    <p>satisfying:</p>
+                    <p>1. Identity: e · x = x</p>
+                    <p>2. Compatibility: (g₁ · g₂) · x = g₁ · (g₂ · x)</p>
+                    
+                    <div class="example-box">
+                        <h4 style="color: #2d3748;">Example: Rotation Group Acting on ℝ²</h4>
+                        <p>Group: SO(2) - rotations in 2D</p>
+                        <p>Space: ℝ² - the plane</p>
+                        <p>Action: Rotate points around the origin</p>
+                    </div>
+                    
+                    <div class="interactive">
+                        <h4>Visualize Group Action</h4>
+                        <p>See how rotation transforms a point:</p>
+                        <div style="margin: 15px 0;">
+                            <label>X: <input type="number" id="pointX" value="3" style="width: 60px;"></label>
+                            <label>Y: <input type="number" id="pointY" value="2" style="width: 60px;"></label>
+                            <label>Angle: <input type="number" id="rotAngle" value="45" style="width: 60px;">°</label>
+                        </div>
+                        <button onclick="visualizeRotation()">Apply Rotation</button>
+                        <canvas id="rotationCanvas" width="300" height="300" style="display: block; margin: 15px auto;"></canvas>
+                        <div id="rotationResult" class="result" style="display:none;"></div>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h3>Equivariance: The Key to ML</h3>
+                    <p>A function f: X → Y is <strong>equivariant</strong> if:</p>
+                    <div class="code">f(g · x) = g · f(x)</div>
+                    <p>Transforming the input is the same as transforming the output!</p>
+                    
+                    <div class="key-insight">
+                        <h4>Why This is Huge for ML</h4>
+                        <p><strong>Translation Equivariance (CNNs):</strong></p>
+                        <div class="code">
+detect(shift(image)) = shift(detect(image))
+                        </div>
+                        <p style="margin-top: 10px;">If you shift the input image, the feature map shifts the same way!</p>
+                        
+                        <p style="margin-top: 15px;"><strong>Rotation Equivariance (Graph Neural Networks):</strong></p>
+                        <p>If you rotate a molecule, the predicted energy should be the same!</p>
+                    </div>
+                    
+                    <div class="example-box">
+                        <h4 style="color: #2d3748;">Example: Convolution is Equivariant</h4>
+                        <p>Let T_d be translation by d pixels</p>
+                        <p>Let * be convolution</p>
+                        <div class="code">
+T_d(f * k) = (T_d f) * k = f * (T_d k)
+                        </div>
+                        <p style="color: #64748b; margin-top: 10px;">This is why CNNs work so well - they respect the symmetries of images!</p>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h3>Invariance vs Equivariance</h3>
+                    <div class="example-box">
+                        <h4 style="color: #2d3748;">Invariance: f(g · x) = f(x)</h4>
+                        <p>Output doesn't change at all</p>
+                        <p>Example: Predicting if an image contains a cat (doesn't matter where the cat is)</p>
+                    </div>
+                    
+                    <div class="example-box">
+                        <h4 style="color: #2d3748;">Equivariance: f(g · x) = g · f(x)</h4>
+                        <p>Output transforms in a predictable way</p>
+                        <p>Example: Segmenting where the cat is (if you move the image, the segmentation moves too)</p>
+                    </div>
+                    
+                    <div class="interactive">
+                        <h4>Test Your Understanding</h4>
+                        <p>Which property should these tasks have?</p>
+                        <div style="margin: 15px 0;">
+                            <p><strong>Image Classification (cat vs dog):</strong></p>
+                            <button onclick="checkSymmetry('classification', 'invariant')">Invariant</button>
+                            <button onclick="checkSymmetry('classification', 'equivariant')">Equivariant</button>
+                        </div>
+                        <div style="margin: 15px 0;">
+                            <p><strong>Object Detection (find bounding boxes):</strong></p>
+                            <button onclick="checkSymmetry('detection', 'invariant')">Invariant</button>
+                            <button onclick="checkSymmetry('detection', 'equivariant')">Equivariant</button>
+                        </div>
+                        <div id="symmetryAnswer" class="result" style="display:none;"></div>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h3>Connection to Causal Reasoning</h3>
+                    <div class="key-insight">
+                        <h4>The Bridge</h4>
+                        <p><strong>Symmetries tell us what's preserved under transformations.</strong></p>
+                        <p><strong>Causal relationships are invariant under certain transformations!</strong></p>
+                        <p style="margin-top: 10px;">Example: If A causes B, this relationship should hold whether we're in summer or winter (unless season is a confounder!).</p>
+                        <p>Understanding which symmetries/invariances hold is key to identifying causal structure.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Level 5: Category Theory -->
+            <div class="level" data-level="5">
+                <div class="section">
+                    <h3>What is Category Theory?</h3>
+                    <p>Category theory is the "mathematics of mathematics" - it studies patterns that appear across different mathematical structures.</p>
+                    
+                    <div class="key-insight">
+                        <h4>The Big Shift in Thinking</h4>
+                        <p><strong>Traditional Math:</strong> Focus on objects (sets, numbers, spaces)</p>
+                        <p><strong>Category Theory:</strong> Focus on relationships (morphisms, transformations)</p>
+                        <p style="margin-top: 10px;">"It's not about what things ARE, it's about how things RELATE."</p>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h3>Definition of a Category</h3>
+                    <p>A <strong>category</strong> C consists of:</p>
+                    <ol style="line-height: 2.5; color: #4a5568; margin-left: 30px;">
+                        <li><strong>Objects:</strong> A, B, C, ... (can be sets, groups, spaces, etc.)</li>
+                        <li><strong>Morphisms (arrows):</strong> f: A → B between objects</li>
+                        <li><strong>Composition:</strong> If f: A → B and g: B → C, then g ∘ f: A → C</li>
+                        <li><strong>Identity:</strong> For each object A, there's id_A: A → A</li>
+                    </ol>
+                    
+                    <p style="margin-top: 15px;">With these rules:</p>
+                    <p style="margin-left: 30px;">• Composition is associative: h ∘ (g ∘ f) = (h ∘ g) ∘ f</p>
+                    <p style="margin-left: 30px;">• Identities are neutral: f ∘ id_A = f = id_B ∘ f</p>
+                </div>
+                
+                <div class="section">
+                    <h3>Example Categories</h3>
+                    <div class="example-box">
+                        <h4 style="color: #2d3748;">Category: Set</h4>
+                        <p><strong>Objects:</strong> Sets (like {1,2,3})</p>
+                        <p><strong>Morphisms:</strong> Functions between sets</p>
+                        <p><strong>Composition:</strong> Function composition</p>
+                    </div>
+                    
+                    <div class="example-box">
+                        <h4 style="color: #2d3748;">Category: Grp (Groups)</h4>
+                        <p><strong>Objects:</strong> Groups</p>
+                        <p><strong>Morphisms:</strong> Group homomorphisms</p>
+                        <p><strong>Composition:</strong> Homomorphism composition</p>
+                    </div>
+                    
+                    <div class="example-box">
+                        <h4 style="color: #2d3748;">Category: Vect (Vector Spaces)</h4>
+                        <p><strong>Objects:</strong> Vector spaces</p>
+                        <p><strong>Morphisms:</strong> Linear transformations</p>
+                        <p><strong>Composition:</strong> Matrix multiplication</p>
+                        <p style="color: #64748b; margin-top: 10px;">This is the category where most ML happens!</p>
+                    </div>
+                    
+                    <div class="interactive">
+                        <h4>Build Your Own Category</h4>
+                        <p>Let's create a simple category with 3 objects and see how composition works:</p>
+                        <div style="margin: 15px 0;">
+                            <p>Objects: A, B, C</p>
+                            <p>Morphisms: f: A → B, g: B → C</p>
+                            <p>What is g ∘ f?</p>
+                        </div>
+                        <button onclick="showComposition()">Show Composition</button>
+                        <canvas id="categoryDiagram" width="400" height="200" style="display: block; margin: 15px auto;"></canvas>
+                        <div id="compositionResult" class="result" style="display:none;"></div>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h3>Functors: Mappings Between Categories</h3>
+                    <p>A <strong>functor</strong> F: C → D maps:</p>
+                    <p style="margin-left: 30px;">• Objects in C to objects in D</p>
+                    <p style="margin-left: 30px;">• Morphisms in C to morphisms in D</p>
+                    <p style="margin-left: 30px;">• Preserves composition: F(g ∘ f) = F(g) ∘ F(f)</p>
+                    <p style="margin-left: 30px;">• Preserves identities: F(id_A) = id_{F(A)}</p>
+                    
+                    <div class="key-insight">
+                        <h4>Functors are Structure-Preserving</h4>
+                        <p>Just like homomorphisms preserve group structure, functors preserve categorical structure!</p>
+                        <p>This is the ultimate abstraction of "structure-preserving map".</p>
+                    </div>
+                    
+                    <div class="example-box">
+                        <h4 style="color: #2d3748;">Example: Forgetful Functor</h4>
+                        <p>F: Grp → Set</p>
+                        <p>Takes a group and "forgets" the group operation, leaving just the set</p>
+                        <p>Maps group homomorphisms to set functions</p>
+                    </div>
+                    
+                    <div class="example-box">
+                        <h4 style="color: #2d3748;">ML Example: Feature Extraction</h4>
+                        <p>Think of CNN layers as functors:</p>
+                        <div class="code">
+Conv2D: Category of Images → Category of Feature Maps
+                        </div>
+                        <p style="color: #64748b; margin-top: 10px;">Maps images to feature representations while preserving spatial relationships!</p>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h3>Natural Transformations</h3>
+                    <p>A <strong>natural transformation</strong> η: F ⇒ G is a "morphism between functors"</p>
+                    <p>For each object A, we have η_A: F(A) → G(A) such that diagrams commute</p>
+                    
+                    <div class="example-box">
+                        <h4 style="color: #2d3748;">ML Example: Skip Connections</h4>
+                        <p>In ResNet, skip connections are like natural transformations:</p>
+                        <div class="code">
+Input ----identity----> Output
+  |                       |
+  +----ResBlock-----> (+)
+                        </div>
+                        <p style="color: #64748b; margin-top: 10px;">The skip connection provides a natural transformation between the identity functor and the residual block functor!</p>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h3>Why Category Theory for ML?</h3>
+                    <div class="key-insight">
+                        <h4>Compositionality</h4>
+                        <p>Category theory gives us a formal framework for how things compose.</p>
+                        <p>Neural networks are compositions. Understanding composition laws helps us design better architectures.</p>
+                    </div>
+                    
+                    <div class="key-insight">
+                        <h4>Abstraction Levels</h4>
+                        <p>Just like software has layers (hardware → OS → application), we can think of ML in categorical layers:</p>
+                        <div class="code">
+Causal Models (high-level structure)
+     ↑
+Category Theory (composition rules)
+     ↑
+Group Theory (symmetries)
+     ↑
+Linear Algebra (transformations)
+     ↑
+Data (observations)
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Level 6: Causal Reasoning -->
+            <div class="level" data-level="6">
+                <div class="section">
+                    <h3>The Problem with Current ML</h3>
+                    <div class="example-box">
+                        <h4 style="color: #e53e3e;">Correlation ≠ Causation</h4>
+                        <p><strong>Example:</strong> Ice cream sales correlate with drowning deaths</p>
+                        <p style="color: #4a5568;">But ice cream doesn't CAUSE drowning!</p>
+                        <p style="color: #4a5568;">Hidden variable: Summer weather causes both</p>
+                    </div>
+                    
+                    <div class="key-insight">
+                        <h4>The Challenge</h4>
+                        <p>Standard ML learns: P(Y|X) - probability of Y given X</p>
+                        <p>But we want: What happens if we DO X? (intervention)</p>
+                        <p>Notation: P(Y|do(X)) - probability of Y if we force X</p>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h3>Pearl's Causal Framework</h3>
+                    <p>Judea Pearl developed a framework with three key components:</p>
+                    
+                    <div class="example-box">
+                        <h4 style="color: #2d3748;">1. Structural Causal Models (SCMs)</h4>
+                        <p>A set of equations describing how variables relate:</p>
+                        <div class="code">
+X = N_X          (exogenous noise)
+Y = f(X, N_Y)    (Y depends on X)
+Z = g(Y, N_Z)    (Z depends on Y)
+                        </div>
+                    </div>
+                    
+                    <div class="example-box">
+                        <h4 style="color: #2d3748;">2. Causal Graphs (DAGs)</h4>
+                        <p>Directed Acyclic Graphs showing causal relationships:</p>
+                        <div style="text-align: center; margin: 15px 0; font-size: 1.2em;">
+                            X → Y → Z
+                        </div>
+                        <p>Arrows represent causal influence, not just correlation</p>
+                    </div>
+                    
+                    <div class="example-box">
+                        <h4 style="color: #2d3748;">3. do-Calculus</h4>
+                        <p>Rules for computing interventional distributions from observational data</p>
+                        <p>Lets us answer: "What if we force X to a specific value?"</p>
+                    </div>
+                    
+                    <div class="interactive">
+                        <h4>Build a Causal Graph</h4>
+                        <p>Consider: Weather → Ice Cream Sales, Weather → Swimming → Drowning</p>
+                        <button onclick="showCausalGraph()">Show Graph</button>
+                        <canvas id="causalCanvas" width="500" height="300" style="display: block; margin: 15px auto;"></canvas>
+                        <div id="causalResult" class="result" style="display:none;"></div>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h3>Categorical Perspective on Causality</h3>
+                    <div class="key-insight">
+                        <h4>The Connection</h4>
+                        <p>We can think of causal models categorically:</p>
+                        <p><strong>Objects:</strong> Probability distributions over variables</p>
+                        <p><strong>Morphisms:</strong> Interventions (do-operations)</p>
+                        <p><strong>Composition:</strong> Sequential interventions</p>
+                    </div>
+                    
+                    <div class="example-box">
+                        <h4 style="color: #2d3748;">Functorial Semantics</h4>
+                        <p>A causal model can be seen as a functor:</p>
+                        <div class="code">
+M: Graph → Prob
+                        </div>
+                        <p>Maps causal structure (graph) to probabilistic behavior</p>
+                        <p style="color: #64748b; margin-top: 10px;">This preserves composition: intervening on A then B is the same as the composed intervention!</p>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h3>Symmetry and Invariance in Causality</h3>
+                    <p>Remember group theory and equivariance? It comes back here!</p>
+                    
+                    <div class="key-insight">
+                        <h4>Causal Invariances</h4>
+                        <p><strong>Key Insight:</strong> Causal relationships are invariant under certain transformations!</p>
+                        <p>If X causes Y, this relationship should hold across:</p>
+                        <ul style="line-height: 2; margin-left: 30px; margin-top: 10px;">
+                            <li>Different environments (domain adaptation)</li>
+                            <li>Different scales (zoom invariance)</li>
+                            <li>Different representations (coordinate changes)</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="example-box">
+                        <h4 style="color: #2d3748;">Example: Causal Discovery</h4>
+                        <p>Methods like ICA (Independent Component Analysis) use symmetries to discover causal structure:</p>
+                        <p>If we can find a representation where components are independent AND simple mechanisms connect them, that's likely the causal direction!</p>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h3>Putting It All Together: Causal ML Architecture</h3>
+                    <div class="code">
+╔════════════════════════════════════════╗
+║  LEVEL 5: CAUSAL REASONING             ║
+║  - SCMs, do-calculus                   ║
+║  - Counterfactuals                     ║
+╠════════════════════════════════════════╣
+║  LEVEL 4: CATEGORY THEORY              ║
+║  - Functors (structure preservation)   ║
+║  - Natural transformations             ║
+╠════════════════════════════════════════╣
+║  LEVEL 3: SYMMETRIES & EQUIVARIANCE    ║
+║  - Group actions on data               ║
+║  - Invariant/equivariant networks      ║
+╠════════════════════════════════════════╣
+║  LEVEL 2: ALGEBRAIC STRUCTURES         ║
+║  - Vector spaces, groups               ║
+║  - Composition properties              ║
+╠════════════════════════════════════════╣
+║  LEVEL 1: DATA & OPERATIONS            ║
+║  - Observations, transformations       ║
+╚════════════════════════════════════════╝
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h3>Practical Example: Building Causal-Aware Models</h3>
+                    <div class="example-box">
+                        <h4 style="color: #2d3748;">Step 1: Identify Symmetries</h4>
+                        <p>What invariances should the causal relationship have?</p>
+                        <p>Example: Drug effect should be invariant to patient's location</p>
+                    </div>
+                    
+                    <div class="example-box">
+                        <h4 style="color: #2d3748;">Step 2: Build Equivariant Architecture</h4>
+                        <p>Design networks that respect these symmetries</p>
+                        <p>Example: Use group-equivariant layers</p>
+                    </div>
+                    
+                    <div class="example-box">
+                        <h4 style="color: #2d3748;">Step 3: Categorical Composition</h4>
+                        <p>Ensure transformations compose properly</p>
+                        <p>Example: Multiple interventions should compose categorically</p>
+                    </div>
+                    
+                    <div class="example-box">
+                        <h4 style="color: #2d3748;">Step 4: Causal Validation</h4>
+                        <p>Test with interventions (A/B tests, RCTs)</p>
+                        <p>Verify model satisfies do-calculus rules</p>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h3>Current Research Frontiers</h3>
+                    <div class="example-box">
+                        <h4 style="color: #2d3748;">Causal Representation Learning</h4>
+                        <p>Learning representations that disentangle causal factors</p>
+                        <p>Uses symmetry constraints to identify causal variables</p>
+                    </div>
+                    
+                    <div class="example-box">
+                        <h4 style="color: #2d3748;">Categorical Quantum Mechanics</h4>
+                        <p>Category theory unifies quantum and causal reasoning</p>
+                        <p>Leads to new quantum-inspired causal models</p>
+                    </div>
+                    
+                    <div class="example-box">
+                        <h4 style="color: #2d3748;">Causal Transformers</h4>
+                        <p>Attention mechanisms with causal structure</p>
+                        <p>Goes beyond sequential causality to general DAGs</p>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h3>Next Steps</h3>
+                    <div class="key-insight">
+                        <h4>Your Learning Path Forward</h4>
+                        <ol style="line-height: 2.5; margin-left: 30px; margin-top: 10px;">
+                            <li>Practice building small SCMs and causal graphs</li>
+                            <li>Implement equivariant neural networks</li>
+                            <li>Study category theory books (Awodey, Riehl)</li>
+                            <li>Read Pearl's "Causality" and "Book of Why"</li>
+                            <li>Explore papers on causal representation learning</li>
+                            <li>Implement interventional training for robustness</li>
+                        </ol>
+                    </div>
+                    
+                    <p style="margin-top: 20px; color: #4a5568;"><strong>Remember:</strong> The goal isn't just to memorize definitions, but to build intuition for how these abstractions help us reason about causality in ML!</p>
+                </div>
+            </div>
+            
+            <!-- Level 7: State-of-the-Art Architectures -->
+            <div class="level" data-level="7">
+                <div class="section">
+                    <h3>🚀 State-of-the-Art: Architectures Built on These Principles</h3>
+                    <p>Now that you understand the foundations, let's see what's actually being built!</p>
+                    
+                    <div class="key-insight">
+                        <h4>The Revolution is Here</h4>
+                        <p>These aren't just theoretical ideas - they're powering state-of-the-art systems in:</p>
+                        <ul style="line-height: 2; margin-left: 30px; margin-top: 10px;">
+                            <li>🧬 Drug discovery (molecular property prediction)</li>
+                            <li>🌍 Climate modeling (physics-informed networks)</li>
+                            <li>🤖 Robotics (SE(3)-equivariant policies)</li>
+                            <li>📊 Causal inference (intervention prediction)</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h3>1. Geometric Deep Learning Framework</h3>
+                    <p><strong>Key Insight:</strong> Most successful architectures can be understood as special cases of geometric deep learning!</p>
+                    
+                    <div class="example-box">
+                        <h4 style="color: #2d3748;">The Unified Blueprint</h4>
+                        <div class="code">
+Domain (Ω) + Symmetry Group (G) + Signal (X) 
+    ↓
+Equivariant Layer: L(g·x) = g·L(x)
+    ↓
+Architecture emerges from symmetries!
+                        </div>
+                        
+                        <p style="margin-top: 15px;"><strong>Examples by domain:</strong></p>
+                        <p>🖼️ <strong>Images:</strong> Translation group → CNNs</p>
+                        <p>📊 <strong>Graphs:</strong> Permutation group → GNNs</p>
+                        <p>🧬 <strong>Molecules:</strong> E(3) rotation/translation → E(n)-Networks</p>
+                        <p>🌐 <strong>Manifolds:</strong> Gauge group → Gauge-Equivariant Networks</p>
+                    </div>
+                    
+                    <div class="interactive">
+                        <h4>Framework Comparison</h4>
+                        <p>Select an architecture to see its symmetry group:</p>
+                        <select id="archSelect" onchange="showArchDetails()">
+                            <option value="">Choose architecture...</option>
+                            <option value="cnn">Convolutional Neural Network (CNN)</option>
+                            <option value="gnn">Graph Neural Network (GNN)</option>
+                            <option value="en">E(n)-Equivariant Network</option>
+                            <option value="transformer">Transformer</option>
+                            <option value="steerable">Steerable CNNs</option>
+                        </select>
+                        <div id="archDetails" class="result" style="display:none;"></div>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h3>2. E(n)-Equivariant Networks</h3>
+                    <p><strong>Most Important Modern Architecture!</strong> Used in AlphaFold 2, molecule generation, physics simulation.</p>
+                    
+                    <div class="key-insight">
+                        <h4>What is E(n)?</h4>
+                        <p><strong>E(n)</strong> = Euclidean group in n dimensions</p>
+                        <p>Transformations: Rotations, Translations, Reflections</p>
+                        <p><strong>Why it matters:</strong> Physical laws are E(3)-equivariant!</p>
+                    </div>
+                    
+                    <div class="example-box">
+                        <h4 style="color: #2d3748;">Architecture Components</h4>
+                        <div class="code">
+# E(n)-Equivariant Message Passing
+class EGNN_Layer:
+    def forward(self, h, x, edge_index):
+        # h: node features (invariant)
+        # x: coordinates (equivariant)
+        
+        # 1. Compute edge features (distances are invariant!)
+        d_ij = ||x_i - x_j||
+        
+        # 2. Message: uses ONLY invariant quantities
+        m_ij = MLP([h_i, h_j, d_ij])
+        
+        # 3. Update features (remains invariant)
+        h_i' = h_i + Σ_j m_ij
+        
+        # 4. Update coordinates (equivariant!)
+        x_i' = x_i + Σ_j (x_i - x_j) * φ(m_ij)
+        
+        return h_i', x_i'
+                        </div>
+                        <p style="color: #64748b; margin-top: 10px;">Key: Coordinates update equivariantly, features update invariantly!</p>
+                    </div>
+                    
+                    <div class="interactive">
+                        <h4>Visualize E(3)-Equivariance</h4>
+                        <p>See how rotating a molecule affects predictions:</p>
+                        <button onclick="demonstrateEquivariance()">Run Demonstration</button>
+                        <canvas id="moleculeCanvas" width="600" height="300" style="display: block; margin: 15px auto;"></canvas>
+                        <div id="equivarianceResult" class="result" style="display:none;"></div>
+                    </div>
+                    
+                    <div class="example-box">
+                        <h4 style="color: #2d3748;">📄 Key Papers</h4>
+                        <p><strong>E(n) Equivariant Graph Neural Networks</strong> (Satorras et al., 2021)</p>
+                        <p style="color: #64748b;">Simple, elegant architecture used in molecule generation</p>
+                        <p style="margin-top: 10px;"><strong>Geometric & Physical Quantities improve E(3) Equivariant Message Passing</strong> (Gasteiger et al., 2021)</p>
+                        <p style="color: #64748b;">Used in DimeNet++, one of the best molecular property predictors</p>
+                        <p style="margin-top: 10px;"><strong>AlphaFold 2</strong> (Jumper et al., 2021)</p>
+                        <p style="color: #64748b;">Uses SE(3)-equivariant attention to predict protein structure</p>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h3>3. Causal Architectures</h3>
+                    <p>Models that explicitly reason about causality, not just correlation.</p>
+                    
+                    <div class="example-box">
+                        <h4 style="color: #2d3748;">A. Invariant Risk Minimization (IRM)</h4>
+                        <p><strong>Problem:</strong> Models fail when distribution shifts (e.g., trained on lab data, deployed in wild)</p>
+                        <p><strong>Solution:</strong> Learn representations that work across ALL environments</p>
+                        <div class="code">
+# IRM Objective
+min Σ_e R^e(Φ ∘ w) + λ ||∇_w R^e(Φ ∘ w)|w=1.0||²
+
+# Translation: Find Φ that works equally well 
+# in environment e when w=1.0 (no environment-specific tuning)
+                        </div>
+                        <p style="color: #64748b; margin-top: 10px;"><strong>Paper:</strong> "Invariant Risk Minimization" (Arjovsky et al., 2019)</p>
+                        <p style="color: #64748b;"><strong>Code:</strong> facebook/InvariantRiskMinimization</p>
+                    </div>
+                    
+                    <div class="example-box">
+                        <h4 style="color: #2d3748;">B. Causal Transformers</h4>
+                        <p>Attention mechanisms with explicit causal structure</p>
+                        <div class="code">
+# Standard Transformer: learns correlations
+Attention(Q, K, V) = softmax(QK^T/√d)V
+
+# Causal Transformer: respects causal graph
+CausalAttention(Q, K, V, G) = softmax(M ⊙ QK^T/√d)V
+# M = causal mask from graph G
+                        </div>
+                        <p style="color: #64748b; margin-top: 10px;"><strong>Paper:</strong> "Causal Attention for Vision-Language Tasks" (Yang et al., 2021)</p>
+                    </div>
+                    
+                    <div class="example-box">
+                        <h4 style="color: #2d3748;">C. Neural Causal Models (NCMs)</h4>
+                        <p>End-to-end differentiable causal models</p>
+                        <div class="code">
+class NeuralCausalModel:
+    def __init__(self, graph):
+        self.graph = graph  # DAG structure
+        self.mechanisms = {}  # Neural nets for each edge
+        
+    def sample(self, interventions={}):
+        # Topologically sort variables
+        for var in topological_sort(self.graph):
+            if var in interventions:
+                values[var] = interventions[var]  # do-operation
+            else:
+                parents = self.graph.parents(var)
+                values[var] = self.mechanisms[var](
+                    *[values[p] for p in parents]
+                )
+        return values
+                        </div>
+                        <p style="color: #64748b; margin-top: 10px;"><strong>Framework:</strong> PyTorch-based causal inference</p>
+                    </div>
+                    
+                    <div class="interactive">
+                        <h4>IRM vs Standard ERM</h4>
+                        <p>Compare how models perform under distribution shift:</p>
+                        <button onclick="compareIRM()">Run Comparison</button>
+                        <canvas id="irmCanvas" width="600" height="250" style="display: block; margin: 15px auto;"></canvas>
+                        <div id="irmResult" class="result" style="display:none;"></div>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h3>4. Categorical/Compositional Architectures</h3>
+                    <p>Explicit use of category theory in neural network design</p>
+                    
+                    <div class="example-box">
+                        <h4 style="color: #2d3748;">A. String Diagram Networks</h4>
+                        <p>Represent computations as morphisms in a category</p>
+                        <div class="code">
+# Category: Vect (vector spaces)
+# Objects: ℝⁿ, ℝᵐ, ...
+# Morphisms: Linear maps
+
+# Network as composition:
+f: ℝ¹⁰⁰ → ℝ⁵⁰  (layer 1)
+g: ℝ⁵⁰ → ℝ²⁰   (layer 2)
+h: ℝ²⁰ → ℝ¹⁰   (layer 3)
+
+Network = h ∘ g ∘ f
+                        </div>
+                        <p style="color: #64748b; margin-top: 10px;"><strong>Advantage:</strong> Compositional guarantees, formal verification</p>
+                    </div>
+                    
+                    <div class="example-box">
+                        <h4 style="color: #2d3748;">B. Functorial Learning</h4>
+                        <p>Neural networks as functors between categories</p>
+                        <div class="code">
+# Example: CNN as functor
+F: Images → Features
+F(img₁ ⊗ img₂) = F(img₁) ⊗ F(img₂)  # preserves structure
+                        </div>
+                        <p style="color: #64748b; margin-top: 10px;"><strong>Paper:</strong> "Backprop as Functor" (Fong et al., 2019)</p>
+                    </div>
+                    
+                    <div class="example-box">
+                        <h4 style="color: #2d3748;">C. Optic Networks</h4>
+                        <p>Bidirectional learning using categorical optics</p>
+                        <p style="color: #64748b;">Unifies forward and backward passes in a single categorical structure</p>
+                        <p style="color: #64748b;"><strong>Paper:</strong> "Categorical Foundations of Gradient-Based Learning" (Cruttwell et al., 2022)</p>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h3>5. Available Frameworks & Tools</h3>
+                    
+                    <div class="example-box">
+                        <h4 style="color: #2d3748;">🔧 Geometric Deep Learning</h4>
+                        <p><strong>e3nn</strong> - E(3)-equivariant neural networks (PyTorch)</p>
+                        <div class="code">pip install e3nn</div>
+                        <p style="color: #64748b; margin-top: 5px;">Used in production for molecule/protein modeling</p>
+                        
+                        <p style="margin-top: 15px;"><strong>PyG (PyTorch Geometric)</strong> - Graph neural networks</p>
+                        <div class="code">pip install torch-geometric</div>
+                        <p style="color: #64748b; margin-top: 5px;">Includes many equivariant architectures</p>
+                        
+                        <p style="margin-top: 15px;"><strong>escnn</strong> - Equivariant Steerable CNNs</p>
+                        <div class="code">pip install escnn</div>
+                        <p style="color: #64748b; margin-top: 5px;">General group-equivariant convolutions</p>
+                    </div>
+                    
+                    <div class="example-box">
+                        <h4 style="color: #2d3748;">🔍 Causal Inference</h4>
+                        <p><strong>DoWhy</strong> - Causal inference library (Microsoft)</p>
+                        <div class="code">pip install dowhy</div>
+                        <p style="color: #64748b; margin-top: 5px;">Implements Pearl's do-calculus</p>
+                        
+                        <p style="margin-top: 15px;"><strong>CausalNex</strong> - Bayesian networks for causality</p>
+                        <div class="code">pip install causalnex</div>
+                        
+                        <p style="margin-top: 15px;"><strong>EconML</strong> - Causal ML (Microsoft)</p>
+                        <div class="code">pip install econml</div>
+                        <p style="color: #64748b; margin-top: 5px;">Heterogeneous treatment effects, CATE estimation</p>
+                    </div>
+                    
+                    <div class="interactive">
+                        <h4>Installation Guide Generator</h4>
+                        <p>Generate a custom setup script:</p>
+                        <div style="margin: 15px 0;">
+                            <label><input type="checkbox" id="install_e3nn"> E(3)-Equivariant Networks (e3nn)</label><br>
+                            <label><input type="checkbox" id="install_pyg"> Graph Neural Networks (PyG)</label><br>
+                            <label><input type="checkbox" id="install_dowhy"> Causal Inference (DoWhy)</label><br>
+                            <label><input type="checkbox" id="install_econml"> Causal ML (EconML)</label><br>
+                            <label><input type="checkbox" id="install_escnn"> Steerable CNNs (escnn)</label><br>
+                        </div>
+                        <button onclick="generateInstall()">Generate Install Script</button>
+                        <div id="installScript" class="result" style="display:none;"></div>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h3>6. Build Your Own: Complete Example</h3>
+                    <p>Let's build a simple E(2)-equivariant network from scratch!</p>
+                    
+                    <div class="example-box">
+                        <h4 style="color: #2d3748;">Rotation-Equivariant 2D CNN</h4>
+                        <div class="code">
+import torch
+import torch.nn as nn
+
+class RotationEquivariantConv(nn.Module):
+    """E(2)-equivariant convolution using group convolutions"""
+    
+    def __init__(self, in_channels, out_channels, n_rotations=4):
+        super().__init__()
+        self.n_rotations = n_rotations
+        self.conv = nn.Conv2d(in_channels, out_channels, 3, padding=1)
+        
+    def forward(self, x):
+        # Apply conv to all rotations
+        outputs = []
+        for i in range(self.n_rotations):
+            angle = i * 360 / self.n_rotations
+            rotated = rotate_2d(x, angle)
+            conv_out = self.conv(rotated)
+            unrotated = rotate_2d(conv_out, -angle)
+            outputs.append(unrotated)
+        
+        # Max pooling over rotations (invariant output)
+        return torch.stack(outputs).max(dim=0)[0]
+
+# Usage
+model = nn.Sequential(
+    RotationEquivariantConv(3, 16, n_rotations=8),
+    nn.ReLU(),
+    RotationEquivariantConv(16, 32, n_rotations=8),
+    nn.ReLU(),
+    nn.AdaptiveAvgPool2d(1),
+    nn.Flatten(),
+    nn.Linear(32, 10)
+)
+
+# Test equivariance
+x = torch.randn(1, 3, 28, 28)
+x_rot = rotate_2d(x, 45)
+
+out1 = model(x)
+out2 = model(x_rot)
+# out1 ≈ out2 (invariant to rotation!)
+                        </div>
+                    </div>
+                    
+                    <div class="example-box">
+                        <h4 style="color: #2d3748;">Simple Causal Network</h4>
+                        <div class="code">
+import torch.nn as nn
+
+class CausalDAGNetwork(nn.Module):
+    """Neural network respecting causal DAG structure"""
+    
+    def __init__(self, dag):
+        super().__init__()
+        self.dag = dag  # adjacency matrix
+        self.mechanisms = nn.ModuleDict()
+        
+        # Create neural net for each variable
+        for i, parents in enumerate(dag):
+            n_parents = parents.sum()
+            self.mechanisms[str(i)] = nn.Sequential(
+                nn.Linear(n_parents, 32),
+                nn.ReLU(),
+                nn.Linear(32, 1)
+            )
+    
+    def forward(self, interventions=None):
+        """
+        Forward pass with optional interventions
+        interventions: dict {variable_idx: value}
+        """
+        values = {}
+        
+        # Topological order (assumed sorted)
+        for i in range(len(self.dag)):
+            if interventions and i in interventions:
+                # do-operation: set value directly
+                values[i] = interventions[i]
+            else:
+                # Compute from parents
+                parents = self.dag[i].nonzero().squeeze()
+                if len(parents) > 0:
+                    parent_vals = torch.stack([values[p.item()] 
+                                              for p in parents])
+                    values[i] = self.mechanisms[str(i)](parent_vals)
+                else:
+                    values[i] = self.mechanisms[str(i)](
+                        torch.zeros(1))
+        
+        return values
+
+# Example: X → Y → Z
+dag = torch.tensor([
+    [0, 1, 0],  # X causes Y
+    [0, 0, 1],  # Y causes Z
+    [0, 0, 0]   # Z has no children
+])
+
+model = CausalDAGNetwork(dag)
+
+# Observational
+obs = model()
+
+# Interventional: set X=5
+interv = model(interventions={0: torch.tensor([5.])})
+                        </div>
+                    </div>
+                    
+                    <div class="interactive">
+                        <h4>Code Playground</h4>
+                        <p>Select architecture to see full implementation:</p>
+                        <select id="codeSelect" onchange="showCode()">
+                            <option value="">Choose...</option>
+                            <option value="e2conv">E(2)-Equivariant Conv</option>
+                            <option value="egnn">E(n)-Equivariant GNN</option>
+                            <option value="irm">Invariant Risk Minimization</option>
+                            <option value="causal">Causal DAG Network</option>
+                        </select>
+                        <div id="codeDisplay" class="result" style="display:none; max-height: 400px; overflow-y: auto;"></div>
+                        <button id="copyCode" onclick="copyCodeToClipboard()" style="display:none; margin-top: 10px;">📋 Copy Code</button>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h3>7. Key Research Papers (2020-2024)</h3>
+                    
+                    <div class="example-box">
+                        <h4 style="color: #2d3748;">📚 Geometric Deep Learning</h4>
+                        <p><strong>1. "Geometric Deep Learning: Grids, Groups, Graphs, Geodesics, and Gauges"</strong></p>
+                        <p style="color: #64748b;">Bronstein et al., 2021 - THE blueprint paper</p>
+                        
+                        <p style="margin-top: 10px;"><strong>2. "E(n) Equivariant Graph Neural Networks"</strong></p>
+                        <p style="color: #64748b;">Satorras et al., 2021 - Simple but powerful</p>
+                        
+                        <p style="margin-top: 10px;"><strong>3. "Equivariant Transformers for Neural Network based Molecular Potentials"</strong></p>
+                        <p style="color: #64748b;">Gasteiger et al., 2022 - State-of-art molecular modeling</p>
+                        
+                        <p style="margin-top: 10px;"><strong>4. "Highly Accurate Protein Structure Prediction with AlphaFold"</strong></p>
+                        <p style="color: #64748b;">Jumper et al., 2021 - SE(3)-equivariant attention</p>
+                    </div>
+                    
+                    <div class="example-box">
+                        <h4 style="color: #2d3748;">🔍 Causal ML</h4>
+                        <p><strong>1. "Towards Causal Representation Learning"</strong></p>
+                        <p style="color: #64748b;">Schölkopf et al., 2021 - Foundational review</p>
+                        
+                        <p style="margin-top: 10px;"><strong>2. "Invariant Risk Minimization"</strong></p>
+                        <p style="color: #64748b;">Arjovsky et al., 2019 - Out-of-distribution generalization</p>
+                        
+                        <p style="margin-top: 10px;"><strong>3. "CausalNex: Causal Reasoning with Bayesian Networks"</strong></p>
+                        <p style="color: #64748b;">Beaumont et al., 2021 - Production system</p>
+                        
+                        <p style="margin-top: 10px;"><strong>4. "Learning Neural Causal Models from Unknown Interventions"</strong></p>
+                        <p style="color: #64748b;">Ke et al., 2020 - End-to-end causal discovery</p>
+                    </div>
+                    
+                    <div class="example-box">
+                        <h4 style="color: #2d3748;">🔄 Category Theory & ML</h4>
+                        <p><strong>1. "Backprop as Functor"</strong></p>
+                        <p style="color: #64748b;">Fong et al., 2019 - Categorical perspective on backprop</p>
+                        
+                        <p style="margin-top: 10px;"><strong>2. "Categorical Foundations of Gradient-Based Learning"</strong></p>
+                        <p style="color: #64748b;">Cruttwell et al., 2022 - Formal framework</p>
+                        
+                        <p style="margin-top: 10px;"><strong>3. "A Compositional Framework for Markov Processes"</strong></p>
+                        <p style="color: #64748b;">Fritz et al., 2020 - Category theory for probabilistic models</p>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h3>8. Your Next Steps: Building Novel Architectures</h3>
+                    
+                    <div class="key-insight">
+                        <h4>Design Principles for New Architectures</h4>
+                        <ol style="line-height: 2.5; margin-left: 30px; margin-top: 10px;">
+                            <li><strong>Identify Domain Symmetries:</strong> What should be invariant/equivariant?</li>
+                            <li><strong>Choose Appropriate Group:</strong> Translation? Rotation? Permutation?</li>
+                            <li><strong>Design Equivariant Operations:</strong> Convolutions, attention, etc.</li>
+                            <li><strong>Add Causal Structure:</strong> Incorporate known causal relationships</li>
+                            <li><strong>Verify Mathematically:</strong> Prove equivariance properties</li>
+                            <li><strong>Test Empirically:</strong> Does it generalize better?</li>
+                        </ol>
+                    </div>
+                    
+                    <div class="example-box">
+                        <h4 style="color: #2d3748;">Example: Time-Series Forecasting</h4>
+                        <p><strong>Problem:</strong> Predict future values</p>
+                        <p><strong>Symmetries:</strong> Time-shift equivariance, scale invariance</p>
+                        <p><strong>Causal structure:</strong> Past causes future (not vice versa)</p>
+                        <p><strong>Architecture:</strong></p>
+                        <div class="code">
+class CausalTemporalNetwork(nn.Module):
+    def __init__(self):
+        # 1. Time-shift equivariant conv
+        self.temporal_conv = CausalConv1d(...)
+        
+        # 2. Scale-invariant normalization
+        self.norm = LayerNorm(...)
+        
+        # 3. Causal attention (no future peeking)
+        self.causal_attn = CausalAttention(...)
+        
+        # 4. Equivariant aggregation
+        self.pool = EquivariantPool(...)
+                        </div>
+                    </div>
+                    
+                    <div class="interactive">
+                        <h4>Architecture Designer</h4>
+                        <p>Design your own equivariant architecture:</p>
+                        <div style="margin: 15px 0;">
+                            <label>Domain: <select id="designDomain">
+                                <option value="images">Images</option>
+                                <option value="graphs">Graphs</option>
+                                <option value="molecules">Molecules</option>
+                                <option value="time">Time Series</option>
+                            </select></label><br>
+                            <label>Symmetry: <select id="designSymmetry">
+                                <option value="translation">Translation</option>
+                                <option value="rotation">Rotation</option>
+                                <option value="permutation">Permutation</option>
+                                <option value="scaling">Scaling</option>
+                            </select></label><br>
+                            <label>Causal: <input type="checkbox" id="designCausal"> Include causal structure</label><br>
+                        </div>
+                        <button onclick="generateArchitecture()">Generate Architecture</button>
+                        <div id="archGenerated" class="result" style="display:none;"></div>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h3>9. Community & Resources</h3>
+                    
+                    <div class="example-box">
+                        <h4 style="color: #2d3748;">🌐 Key Communities</h4>
+                        <p><strong>Geometric Deep Learning:</strong> geometricdeeplearning.com</p>
+                        <p><strong>GitHub:</strong> github.com/topics/geometric-deep-learning</p>
+                        <p><strong>Discord:</strong> PyG/e3nn communities</p>
+                    </div>
+                    
+                    <div class="example-box">
+                        <h4 style="color: #2d3748;">📖 Learning Resources</h4>
+                        <p><strong>Course:</strong> "Geometric Deep Learning" (Oxford, 2021)</p>
+                        <p><strong>Book:</strong> "Geometric Deep Learning" (Proto-book, free online)</p>
+                        <p><strong>Tutorials:</strong> PyG documentation, e3nn tutorials</p>
+                    </div>
+                    
+                    <div class="example-box">
+                        <h4 style="color: #2d3748;">🔬 Conferences</h4>
+                        <p>NeurIPS, ICML, ICLR (main ML)</p>
+                        <p>Learning on Graphs (LoG) conference</p>
+                        <p>Causal Learning and Reasoning (CLeaR)</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="navigation">
+            <button onclick="previousLevel()" id="prevBtn">← Previous</button>
+            <button onclick="nextLevel()" id="nextBtn">Next →</button>
+        </div>
+    </div>
+    
+    <script>
+        let currentLevel = 0;
+        const maxLevel = 7;
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            updateProgress();
+            drawSquare();
+        });
+        
+        // Navigation
+        document.querySelectorAll('.nav-tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                const level = parseInt(this.dataset.level);
+                showLevel(level);
+            });
+        });
+        
+        function showLevel(level) {
+            currentLevel = level;
+            
+            // Update tabs
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelector(`[data-level="${level}"]`).classList.add('active');
+            
+            // Update content
+            document.querySelectorAll('.level').forEach(l => {
+                l.classList.remove('active');
+            });
+            document.querySelector(`.level[data-level="${level}"]`).classList.add('active');
+            
+            updateProgress();
+            updateNavButtons();
+        }
+        
+        function nextLevel() {
+            if (currentLevel < maxLevel) {
+                showLevel(currentLevel + 1);
+            }
+        }
+        
+        function previousLevel() {
+            if (currentLevel > 0) {
+                showLevel(currentLevel - 1);
+            }
+        }
+        
+        function updateProgress() {
+            const progress = (currentLevel / maxLevel) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+        }
+        
+        function updateNavButtons() {
+            document.getElementById('prevBtn').disabled = currentLevel === 0;
+            document.getElementById('nextBtn').disabled = currentLevel === maxLevel;
+        }
+        
+        // Level 1: Sets & Functions
+        function createSet() {
+            const input = document.getElementById('setInput').value;
+            const elements = input.split(',').map(e => e.trim()).filter(e => e);
+            const uniqueElements = [...new Set(elements)];
+            
+            const result = document.getElementById('setResult');
+            result.style.display = 'block';
+            result.innerHTML = `
+                <strong>Your set:</strong> {${uniqueElements.join(', ')}}<br>
+                <strong>Size:</strong> ${uniqueElements.length} elements<br>
+                ${elements.length !== uniqueElements.length ? '<span style="color: #f59e0b;">Note: Duplicates were removed (sets have unique elements)</span>' : ''}
+            `;
+        }
+        
+        function computeComposition() {
+            const x = parseFloat(document.getElementById('composeInput').value);
+            if (isNaN(x)) return;
+            
+            const f_x = x + 3;
+            const g_f_x = f_x * 2;
+            
+            const result = document.getElementById('composeResult');
+            result.style.display = 'block';
+            result.innerHTML = `
+                <strong>Step by step:</strong><br>
+                f(${x}) = ${x} + 3 = ${f_x}<br>
+                g(f(${x})) = g(${f_x}) = ${f_x} × 2 = ${g_f_x}<br>
+                <br>
+                <strong>Formula:</strong> (g ∘ f)(x) = 2(x + 3) = 2x + 6<br>
+                <strong>Result:</strong> ${g_f_x}
+            `;
+        }
+        
+        // Level 2: Algebra
+        function multiplyMatrices() {
+            const a11 = parseFloat(document.getElementById('a11').value);
+            const a12 = parseFloat(document.getElementById('a12').value);
+            const a21 = parseFloat(document.getElementById('a21').value);
+            const a22 = parseFloat(document.getElementById('a22').value);
+            
+            const b11 = parseFloat(document.getElementById('b11').value);
+            const b12 = parseFloat(document.getElementById('b12').value);
+            const b21 = parseFloat(document.getElementById('b21').value);
+            const b22 = parseFloat(document.getElementById('b22').value);
+            
+            // A × B
+            const ab11 = a11 * b11 + a12 * b21;
+            const ab12 = a11 * b12 + a12 * b22;
+            const ab21 = a21 * b11 + a22 * b21;
+            const ab22 = a21 * b12 + a22 * b22;
+            
+            // B × A
+            const ba11 = b11 * a11 + b12 * a21;
+            const ba12 = b11 * a12 + b12 * a22;
+            const ba21 = b21 * a11 + b22 * a21;
+            const ba22 = b21 * a12 + b22 * a22;
+            
+            const result = document.getElementById('matrixResult');
+            result.style.display = 'block';
+            
+            const isCommutative = ab11 === ba11 && ab12 === ba12 && ab21 === ba21 && ab22 === ba22;
+            
+            result.innerHTML = `
+                <strong>A × B =</strong><br>
+                [${ab11}, ${ab12}]<br>
+                [${ab21}, ${ab22}]<br>
+                <br>
+                <strong>B × A =</strong><br>
+                [${ba11}, ${ba12}]<br>
+                [${ba21}, ${ba22}]<br>
+                <br>
+                <strong>${isCommutative ? '✓ They are equal!' : '✗ They are NOT equal!'}</strong><br>
+                Matrix multiplication is ${isCommutative ? 'commutative for these matrices' : 'NOT commutative in general'}
+            `;
+        }
+        
+        // Level 3: Groups
+        function checkGroup() {
+            const example = document.getElementById('groupExample').value;
+            const result = document.getElementById('groupCheck');
+            result.style.display = 'block';
+            
+            if (example === 'integers-add') {
+                result.innerHTML = `
+                    <strong>Integers under Addition (ℤ, +)</strong><br><br>
+                    ✓ <strong>Closure:</strong> 3 + 5 = 8 (still an integer)<br>
+                    ✓ <strong>Associativity:</strong> (1+2)+3 = 1+(2+3) = 6<br>
+                    ✓ <strong>Identity:</strong> 0 (any number + 0 = that number)<br>
+                    ✓ <strong>Inverse:</strong> For 7, inverse is -7 (7 + (-7) = 0)<br>
+                    <br>
+                    <span style="color: #10b981; font-weight: bold;">✓ This IS a group!</span>
+                `;
+            } else if (example === 'integers-mult') {
+                result.innerHTML = `
+                    <strong>Integers under Multiplication (ℤ, ×)</strong><br><br>
+                    ✓ <strong>Closure:</strong> 3 × 5 = 15 (still an integer)<br>
+                    ✓ <strong>Associativity:</strong> (2×3)×4 = 2×(3×4) = 24<br>
+                    ✓ <strong>Identity:</strong> 1 (any number × 1 = that number)<br>
+                    ✗ <strong>Inverse:</strong> 2 has no integer inverse (1/2 is not an integer)<br>
+                    <br>
+                    <span style="color: #e53e3e; font-weight: bold;">✗ This is NOT a group!</span><br>
+                    (But (ℚ\{0}, ×) - non-zero rationals - IS a group)
+                `;
+            } else {
+                result.innerHTML = `
+                    <strong>Symmetries of a Square (D₄)</strong><br><br>
+                    ✓ <strong>Closure:</strong> Rotating then flipping is another symmetry<br>
+                    ✓ <strong>Associativity:</strong> Order of composition doesn't matter<br>
+                    ✓ <strong>Identity:</strong> Do nothing (0° rotation)<br>
+                    ✓ <strong>Inverse:</strong> Rotate 90° CW, inverse is 90° CCW<br>
+                    <br>
+                    <span style="color: #10b981; font-weight: bold;">✓ This IS a group!</span><br>
+                    (Called the Dihedral group D₄ with 8 elements)
+                `;
+            }
+        }
+        
+        // Square visualization
+        let squareRotation = 0;
+        let squareFlipped = false;
+        
+        function drawSquare() {
+            const canvas = document.getElementById('squareCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const centerX = 200;
+            const centerY = 200;
+            const size = 80;
+            
+            ctx.clearRect(0, 0, 400, 400);
+            ctx.save();
+            ctx.translate(centerX, centerY);
+            ctx.rotate(squareRotation * Math.PI / 180);
+            if (squareFlipped) ctx.scale(1, -1);
+            
+            // Draw square
+            ctx.fillStyle = '#667eea';
+            ctx.fillRect(-size/2, -size/2, size, size);
+            
+            // Draw corners with different colors
+            ctx.fillStyle = '#f59e0b';
+            ctx.beginPath();
+            ctx.arc(-size/2, -size/2, 8, 0, 2*Math.PI);
+            ctx.fill();
+            
+            ctx.fillStyle = '#10b981';
+            ctx.beginPath();
+            ctx.arc(size/2, -size/2, 8, 0, 2*Math.PI);
+            ctx.fill();
+            
+            ctx.fillStyle = '#ef4444';
+            ctx.beginPath();
+            ctx.arc(size/2, size/2, 8, 0, 2*Math.PI);
+            ctx.fill();
+            
+            ctx.fillStyle = '#8b5cf6';
+            ctx.beginPath();
+            ctx.arc(-size/2, size/2, 8, 0, 2*Math.PI);
+            ctx.fill();
+            
+            ctx.restore();
+            
+            // Labels
+            ctx.fillStyle = '#2d3748';
+            ctx.font = '14px sans-serif';
+            ctx.fillText('Orange: Top-Left', 10, 30);
+            ctx.fillText('Green: Top-Right', 10, 50);
+            ctx.fillText('Red: Bottom-Right', 10, 70);
+            ctx.fillText('Purple: Bottom-Left', 10, 90);
+        }
+        
+        function rotateSquare(angle) {
+            squareRotation = (squareRotation + angle) % 360;
+            drawSquare();
+            updateSymmetryLog();
+        }
+        
+        function flipSquare(axis) {
+            squareFlipped = !squareFlipped;
+            drawSquare();
+            updateSymmetryLog();
+        }
+        
+        function resetSquare() {
+            squareRotation = 0;
+            squareFlipped = false;
+            drawSquare();
+            const log = document.getElementById('symmetryLog');
+            log.style.display = 'none';
+        }
+        
+        function updateSymmetryLog() {
+            const log = document.getElementById('symmetryLog');
+            log.style.display = 'block';
+            log.innerHTML = `
+                <strong>Current state:</strong><br>
+                Rotation: ${squareRotation}°<br>
+                Flipped: ${squareFlipped ? 'Yes' : 'No'}<br>
+                <em>Notice: The square looks the same despite the transformation!</em>
+            `;
+        }
+        
+        // Level 4: Geometry
+        function visualizeRotation() {
+            const x = parseFloat(document.getElementById('pointX').value);
+            const y = parseFloat(document.getElementById('pointY').value);
+            const angle = parseFloat(document.getElementById('rotAngle').value) * Math.PI / 180;
+            
+            const newX = x * Math.cos(angle) - y * Math.sin(angle);
+            const newY = x * Math.sin(angle) + y * Math.cos(angle);
+            
+            const canvas = document.getElementById('rotationCanvas');
+            const ctx = canvas.getContext('2d');
+            const centerX = 150;
+            const centerY = 150;
+            const scale = 20;
+            
+            ctx.clearRect(0, 0, 300, 300);
+            
+            // Draw axes
+            ctx.strokeStyle = '#cbd5e0';
+            ctx.beginPath();
+            ctx.moveTo(0, centerY);
+            ctx.lineTo(300, centerY);
+            ctx.moveTo(centerX, 0);
+            ctx.lineTo(centerX, 300);
+            ctx.stroke();
+            
+            // Draw original point
+            ctx.fillStyle = '#3b82f6';
+            ctx.beginPath();
+            ctx.arc(centerX + x*scale, centerY - y*scale, 6, 0, 2*Math.PI);
+            ctx.fill();
+            
+            // Draw rotated point
+            ctx.fillStyle = '#ef4444';
+            ctx.beginPath();
+            ctx.arc(centerX + newX*scale, centerY - newY*scale, 6, 0, 2*Math.PI);
+            ctx.fill();
+            
+            // Draw rotation arc
+            ctx.strokeStyle = '#10b981';
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            const radius = Math.sqrt(x*x + y*y) * scale;
+            const startAngle = Math.atan2(-y, x);
+            const endAngle = Math.atan2(-newY, newX);
+            ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            
+            const result = document.getElementById('rotationResult');
+            result.style.display = 'block';
+            result.innerHTML = `
+                <strong>Original:</strong> (${x.toFixed(2)}, ${y.toFixed(2)})<br>
+                <strong>After ${(angle * 180 / Math.PI).toFixed(0)}° rotation:</strong> (${newX.toFixed(2)}, ${newY.toFixed(2)})<br>
+                <em>Blue = original, Red = rotated</em>
+            `;
+        }
+        
+        function checkSymmetry(task, answer) {
+            const result = document.getElementById('symmetryAnswer');
+            result.style.display = 'block';
+            
+            if (task === 'classification') {
+                if (answer === 'invariant') {
+                    result.innerHTML = `
+                        <span style="color: #10b981; font-weight: bold;">✓ Correct!</span><br>
+                        Classification should be <strong>invariant</strong> to position/rotation.<br>
+                        Whether the cat is on the left or right, it's still a cat!
+                    `;
+                    result.style.background = '#d1fae5';
+                } else {
+                    result.innerHTML = `
+                        <span style="color: #e53e3e; font-weight: bold;">✗ Not quite!</span><br>
+                        Classification should be <strong>invariant</strong>, not equivariant.<br>
+                        The label "cat" doesn't move when the image moves!
+                    `;
+                    result.style.background = '#fee2e2';
+                }
+            } else {
+                if (answer === 'equivariant') {
+                    result.innerHTML = `
+                        <span style="color: #10b981; font-weight: bold;">✓ Correct!</span><br>
+                        Detection should be <strong>equivariant</strong> to transformations.<br>
+                        If you shift the image, the bounding boxes shift too!
+                    `;
+                    result.style.background = '#d1fae5';
+                } else {
+                    result.innerHTML = `
+                        <span style="color: #e53e3e; font-weight: bold;">✗ Not quite!</span><br>
+                        Detection should be <strong>equivariant</strong>, not invariant.<br>
+                        Bounding boxes need to move with the objects!
+                    `;
+                    result.style.background = '#fee2e2';
+                }
+            }
+        }
+        
+        // Level 5: Categories
+        function showComposition() {
+            const canvas = document.getElementById('categoryDiagram');
+            const ctx = canvas.getContext('2d');
+            
+            ctx.clearRect(0, 0, 400, 200);
+            
+            // Draw objects
+            const drawCircle = (x, y, label) => {
+                ctx.beginPath();
+                ctx.arc(x, y, 30, 0, 2*Math.PI);
+                ctx.fillStyle = '#667eea';
+                ctx.fill();
+                ctx.strokeStyle = '#2d3748';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                ctx.fillStyle = 'white';
+                ctx.font = 'bold 20px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(label, x, y);
+            };
+            
+            drawCircle(80, 100, 'A');
+            drawCircle(200, 100, 'B');
+            drawCircle(320, 100, 'C');
+            
+            // Draw morphisms
+            ctx.strokeStyle = '#2d3748';
+            ctx.lineWidth = 2;
+            
+            // f: A -> B
+            ctx.beginPath();
+            ctx.moveTo(110, 100);
+            ctx.lineTo(170, 100);
+            ctx.stroke();
+            ctx.fillStyle = '#2d3748';
+            ctx.beginPath();
+            ctx.moveTo(170, 100);
+            ctx.lineTo(160, 95);
+            ctx.lineTo(160, 105);
+            ctx.fill();
+            ctx.fillText('f', 140, 85);
+            
+            // g: B -> C
+            ctx.beginPath();
+            ctx.moveTo(230, 100);
+            ctx.lineTo(290, 100);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(290, 100);
+            ctx.lineTo(280, 95);
+            ctx.lineTo(280, 105);
+            ctx.fill();
+            ctx.fillText('g', 260, 85);
+            
+            // g ∘ f: A -> C (composition)
+            ctx.strokeStyle = '#ef4444';
+            ctx.lineWidth = 3;
+            ctx.setLineDash([10, 5]);
+            ctx.beginPath();
+            ctx.moveTo(100, 120);
+            ctx.quadraticCurveTo(200, 160, 300, 120);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            ctx.fillStyle = '#ef4444';
+            ctx.font = 'bold 16px sans-serif';
+            ctx.fillText('g ∘ f', 200, 155);
+            
+            const result = document.getElementById('compositionResult');
+            result.style.display = 'block';
+            result.innerHTML = `
+                <strong>Composition in action!</strong><br>
+                If f: A → B and g: B → C, then g ∘ f: A → C<br>
+                <em>This is a fundamental property of categories - morphisms compose!</em>
+            `;
+        }
+        
+        // Level 6: Causal Reasoning
+        function showCausalGraph() {
+            const canvas = document.getElementById('causalCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            ctx.clearRect(0, 0, 500, 300);
+            
+            const drawNode = (x, y, label, color = '#667eea') => {
+                ctx.beginPath();
+                ctx.arc(x, y, 40, 0, 2*Math.PI);
+                ctx.fillStyle = color;
+                ctx.fill();
+                ctx.strokeStyle = '#2d3748';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                ctx.fillStyle = 'white';
+                ctx.font = 'bold 12px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                const words = label.split(' ');
+                words.forEach((word, i) => {
+                    ctx.fillText(word, x, y - 10 + i*15);
+                });
+            };
+            
+            const drawArrow = (x1, y1, x2, y2, label = '', color = '#2d3748') => {
+                const angle = Math.atan2(y2 - y1, x2 - x1);
+                const startX = x1 + 40 * Math.cos(angle);
+                const startY = y1 + 40 * Math.sin(angle);
+                const endX = x2 - 40 * Math.cos(angle);
+                const endY = y2 - 40 * Math.sin(angle);
+                
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(startX, startY);
+                ctx.lineTo(endX, endY);
+                ctx.stroke();
+                
+                ctx.fillStyle = color;
+                ctx.beginPath();
+                ctx.moveTo(endX, endY);
+                ctx.lineTo(endX - 12*Math.cos(angle-0.3), endY - 12*Math.sin(angle-0.3));
+                ctx.lineTo(endX - 12*Math.cos(angle+0.3), endY - 12*Math.sin(angle+0.3));
+                ctx.fill();
+                
+                if (label) {
+                    ctx.fillStyle = '#2d3748';
+                    ctx.font = '12px sans-serif';
+                    const midX = (startX + endX) / 2;
+                    const midY = (startY + endY) / 2;
+                    ctx.fillText(label, midX, midY - 10);
+                }
+            };
+            
+            // Draw nodes
+            drawNode(100, 80, 'Weather', '#f59e0b');
+            drawNode(250, 50, 'Ice Cream Sales', '#667eea');
+            drawNode(250, 150, 'Swimming', '#667eea');
+            drawNode(400, 150, 'Drowning', '#ef4444');
+            
+            // Draw causal arrows
+            drawArrow(100, 80, 250, 50, 'causes');
+            drawArrow(100, 80, 250, 150, 'causes');
+            drawArrow(250, 150, 400, 150, 'causes');
+            
+            // Draw spurious correlation
+            ctx.strokeStyle = '#e53e3e';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([10, 5]);
+            ctx.beginPath();
+            ctx.moveTo(250, 80);
+            ctx.quadraticCurveTo(350, 100, 400, 130);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            ctx.fillStyle = '#e53e3e';
+            ctx.font = 'italic 11px sans-serif';
+            ctx.fillText('spurious correlation', 320, 90);
+            
+            const result = document.getElementById('causalResult');
+            result.style.display = 'block';
+            result.innerHTML = `
+                <strong>Key Insights:</strong><br>
+                • Weather CAUSES both ice cream sales and swimming<br>
+                • Swimming CAUSES drowning<br>
+                • Ice cream and drowning are <em>correlated but not causal</em><br>
+                <br>
+                <strong>Intervention test:</strong><br>
+                do(Ice Cream = high) won't change P(Drowning)<br>
+                do(Swimming = high) WILL change P(Drowning)<br>
+                <br>
+                <em>This is why we need causal graphs, not just correlations!</em>
+            `;
+        }
+        
+        // Level 7: State-of-the-Art
+        function showArchDetails() {
+            const arch = document.getElementById('archSelect').value;
+            const result = document.getElementById('archDetails');
+            
+            if (!arch) {
+                result.style.display = 'none';
+                return;
+            }
+            
+            result.style.display = 'block';
+            
+            const details = {
+                'cnn': {
+                    name: 'Convolutional Neural Network',
+                    group: 'Translation Group (ℤ² or ℝ²)',
+                    symmetry: 'Translation equivariance',
+                    desc: 'If you shift the input image, the feature maps shift the same way',
+                    example: 'conv(shift(img)) = shift(conv(img))',
+                    use: 'Image classification, object detection'
+                },
+                'gnn': {
+                    name: 'Graph Neural Network',
+                    group: 'Permutation Group (S_n)',
+                    symmetry: 'Permutation equivariance',
+                    desc: 'If you reorder the nodes, the output reorders correspondingly',
+                    example: 'GNN(π(G)) = π(GNN(G)) for permutation π',
+                    use: 'Social networks, molecules, recommendation systems'
+                },
+                'en': {
+                    name: 'E(n)-Equivariant Network',
+                    group: 'Euclidean Group E(n)',
+                    symmetry: 'Rotation, translation, reflection equivariance',
+                    desc: 'Output transforms naturally with rotations/translations of input',
+                    example: 'f(R·x) = R·f(x) for rotation R',
+                    use: 'Molecules, proteins, physics simulation, robotics'
+                },
+                'transformer': {
+                    name: 'Transformer',
+                    group: 'Permutation Group (partially)',
+                    symmetry: 'Permutation equivariant (with positional encoding breaks it)',
+                    desc: 'Self-attention is permutation equivariant, but positional embeddings break symmetry',
+                    example: 'Attention(π(X)) = π(Attention(X))',
+                    use: 'NLP, vision, time-series, general sequence modeling'
+                },
+                'steerable': {
+                    name: 'Steerable CNN',
+                    group: 'Rotation Group SO(2) or SO(3)',
+                    symmetry: 'Continuous rotation equivariance',
+                    desc: 'Equivariant to arbitrary rotation angles (not just 90°)',
+                    example: 'Uses spherical harmonics for SO(3)',
+                    use: 'Medical imaging, satellite imagery, omnidirectional vision'
+                }
+            };
+            
+            const d = details[arch];
+            result.innerHTML = `
+                <strong>${d.name}</strong><br><br>
+                <strong>Symmetry Group:</strong> ${d.group}<br>
+                <strong>Property:</strong> ${d.symmetry}<br>
+                <strong>Meaning:</strong> ${d.desc}<br>
+                <strong>Mathematical:</strong> <code style="background: #1e293b; color: #e2e8f0; padding: 2px 8px; border-radius: 3px;">${d.example}</code><br>
+                <strong>Applications:</strong> ${d.use}
+            `;
+        }
+        
+        function demonstrateEquivariance() {
+            const canvas = document.getElementById('moleculeCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            ctx.clearRect(0, 0, 600, 300);
+            
+            // Draw two molecules - original and rotated
+            const drawMolecule = (offsetX, angle, label) => {
+                ctx.save();
+                ctx.translate(offsetX, 150);
+                ctx.rotate(angle);
+                
+                // Draw atoms
+                const atoms = [
+                    {x: 0, y: 0, label: 'C'},
+                    {x: 40, y: 0, label: 'H'},
+                    {x: -40, y: 0, label: 'H'},
+                    {x: 0, y: 40, label: 'O'}
+                ];
+                
+                // Draw bonds
+                ctx.strokeStyle = '#4a5568';
+                ctx.lineWidth = 2;
+                atoms.forEach((atom, i) => {
+                    if (i > 0) {
+                        ctx.beginPath();
+                        ctx.moveTo(0, 0);
+                        ctx.lineTo(atom.x, atom.y);
+                        ctx.stroke();
+                    }
+                });
+                
+                // Draw atoms
+                atoms.forEach(atom => {
+                    ctx.beginPath();
+                    ctx.arc(atom.x, atom.y, 15, 0, 2*Math.PI);
+                    ctx.fillStyle = atom.label === 'C' ? '#667eea' : 
+                                   atom.label === 'O' ? '#ef4444' : '#10b981';
+                    ctx.fill();
+                    ctx.strokeStyle = '#2d3748';
+                    ctx.stroke();
+                    
+                    ctx.fillStyle = 'white';
+                    ctx.font = 'bold 12px sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(atom.label, atom.x, atom.y);
+                });
+                
+                ctx.restore();
+                
+                // Label
+                ctx.fillStyle = '#2d3748';
+                ctx.font = '14px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(label, offsetX, 20);
+            };
+            
+            drawMolecule(150, 0, 'Original Molecule');
+            drawMolecule(450, Math.PI / 3, 'Rotated 60°');
+            
+            // Draw arrow
+            ctx.strokeStyle = '#667eea';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(250, 150);
+            ctx.lineTo(350, 150);
+            ctx.stroke();
+            ctx.fillStyle = '#667eea';
+            ctx.beginPath();
+            ctx.moveTo(350, 150);
+            ctx.lineTo(340, 145);
+            ctx.lineTo(340, 155);
+            ctx.fill();
+            
+            ctx.fillStyle = '#667eea';
+            ctx.font = 'bold 14px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('Rotation R', 300, 135);
+            
+            const result = document.getElementById('equivarianceResult');
+            result.style.display = 'block';
+            result.innerHTML = `
+                <strong>E(3)-Equivariance Test:</strong><br><br>
+                <strong>Energy (original):</strong> -123.45 kcal/mol<br>
+                <strong>Energy (rotated):</strong> -123.45 kcal/mol<br>
+                <br>
+                <span style="color: #10b981; font-weight: bold;">✓ Energy is INVARIANT to rotation!</span><br>
+                <br>
+                But feature maps rotate with the molecule:<br>
+                f(R·molecule) = R·f(molecule) <span style="color: #10b981;">✓ EQUIVARIANT</span><br>
+                <br>
+                <em>This is why E(n)-networks work for physics - they respect physical symmetries!</em>
+            `;
+        }
+        
+        function compareIRM() {
+            const canvas = document.getElementById('irmCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            ctx.clearRect(0, 0, 600, 250);
+            
+            // Draw comparison chart
+            const environments = ['Train Env 1', 'Train Env 2', 'Train Env 3', 'Test Env'];
+            const erm_scores = [95, 93, 94, 62];  // Standard ML fails on test
+            const irm_scores = [88, 87, 89, 86];  // IRM generalizes
+            
+            const barWidth = 35;
+            const gap = 80;
+            const startX = 60;
+            
+            // Draw bars
+            environments.forEach((env, i) => {
+                const x = startX + i * gap;
+                
+                // ERM bar
+                const erm_height = erm_scores[i] * 1.8;
+                ctx.fillStyle = i === 3 ? '#ef4444' : '#94a3b8';
+                ctx.fillRect(x, 200 - erm_height, barWidth, erm_height);
+                
+                // IRM bar
+                const irm_height = irm_scores[i] * 1.8;
+                ctx.fillStyle = i === 3 ? '#10b981' : '#667eea';
+                ctx.fillRect(x + barWidth + 5, 200 - irm_height, barWidth, irm_height);
+                
+                // Labels
+                ctx.fillStyle = '#2d3748';
+                ctx.font = '11px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(env, x + barWidth + 2.5, 220);
+                
+                // Scores
+                ctx.font = 'bold 10px sans-serif';
+                ctx.fillText(erm_scores[i], x + barWidth/2, 195 - erm_height);
+                ctx.fillText(irm_scores[i], x + barWidth + 5 + barWidth/2, 195 - irm_height);
+            });
+            
+            // Legend
+            ctx.fillStyle = '#94a3b8';
+            ctx.fillRect(450, 30, 20, 15);
+            ctx.fillStyle = '#2d3748';
+            ctx.font = '12px sans-serif';
+            ctx.textAlign = 'left';
+            ctx.fillText('ERM (Standard)', 475, 42);
+            
+            ctx.fillStyle = '#667eea';
+            ctx.fillRect(450, 50, 20, 15);
+            ctx.fillText('IRM (Invariant)', 475, 62);
+            
+            // Title
+            ctx.font = 'bold 14px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('Accuracy (%)', 300, 20);
+            
+            const result = document.getElementById('irmResult');
+            result.style.display = 'block';
+            result.innerHTML = `
+                <strong>Key Insight:</strong><br>
+                Standard ERM learns <em>spurious correlations</em> that work in training but fail in new environments.<br>
+                IRM learns <em>invariant features</em> that capture true causal relationships.<br>
+                <br>
+                <strong>Trade-off:</strong> IRM slightly lower train accuracy, but much better generalization!<br>
+                <em>This is the price of learning causal structure vs just patterns.</em>
+            `;
+        }
+        
+        function generateInstall() {
+            const packages = {
+                'install_e3nn': {name: 'e3nn', desc: 'E(3)-equivariant networks'},
+                'install_pyg': {name: 'torch-geometric', desc: 'Graph neural networks'},
+                'install_dowhy': {name: 'dowhy', desc: 'Causal inference'},
+                'install_econml': {name: 'econml', desc: 'Causal ML'},
+                'install_escnn': {name: 'escnn', desc: 'Steerable CNNs'}
+            };
+            
+            let script = '#!/bin/bash\n# Auto-generated installation script\n\n';
+            script += '# Create virtual environment (recommended)\n';
+            script += 'python -m venv causal_ml_env\n';
+            script += 'source causal_ml_env/bin/activate  # On Windows: causal_ml_env\\Scripts\\activate\n\n';
+            script += '# Install PyTorch (CPU version - modify for GPU)\n';
+            script += 'pip install torch torchvision torchaudio\n\n';
+            
+            let hasPackages = false;
+            Object.keys(packages).forEach(id => {
+                if (document.getElementById(id).checked) {
+                    hasPackages = true;
+                    const pkg = packages[id];
+                    script += `# ${pkg.desc}\n`;
+                    script += `pip install ${pkg.name}\n\n`;
+                }
+            });
+            
+            if (!hasPackages) {
+                script += '# No packages selected!\n';
+            }
+            
+            script += '# Verify installation\n';
+            script += 'python -c "import torch; print(f\'PyTorch {torch.__version__}\')"';
+            
+            const result = document.getElementById('installScript');
+            result.style.display = 'block';
+            result.innerHTML = `<pre style="white-space: pre-wrap;">${script}</pre>`;
+        }
+        
+        function showCode() {
+            const code = document.getElementById('codeSelect').value;
+            const display = document.getElementById('codeDisplay');
+            const copyBtn = document.getElementById('copyCode');
+            
+            if (!code) {
+                display.style.display = 'none';
+                copyBtn.style.display = 'none';
+                return;
+            }
+            
+            const codes = {
+                'e2conv': `import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+class E2EquivariantConv(nn.Module):
+    """
+    E(2)-Equivariant Convolution using group convolutions.
+    Equivariant to rotations and reflections in 2D.
+    """
+    def __init__(self, in_channels, out_channels, kernel_size=3, n_rotations=4):
+        super().__init__()
+        self.n_rotations = n_rotations
+        self.kernel_size = kernel_size
+        
+        # Learnable filter
+        self.weight = nn.Parameter(
+            torch.randn(out_channels, in_channels, kernel_size, kernel_size)
+        )
+        self.bias = nn.Parameter(torch.zeros(out_channels))
+        
+    def rotate_kernel(self, weight, k):
+        """Rotate kernel by k*90 degrees"""
+        return torch.rot90(weight, k, dims=(2, 3))
+    
+    def forward(self, x):
+        # Apply rotated filters
+        outputs = []
+        for k in range(self.n_rotations):
+            rotated_weight = self.rotate_kernel(self.weight, k)
+            out = F.conv2d(x, rotated_weight, self.bias, padding=self.kernel_size//2)
+            outputs.append(out)
+        
+        # Stack outputs (one per rotation)
+        return torch.stack(outputs, dim=1)  # [B, n_rotations, C, H, W]
+
+# Example usage
+model = nn.Sequential(
+    E2EquivariantConv(3, 16, n_rotations=4),
+    nn.ReLU(),
+    E2EquivariantConv(16, 32, n_rotations=4),
+    nn.ReLU()
+)
+
+x = torch.randn(1, 3, 28, 28)
+out = model(x)
+print(f"Output shape: {out.shape}")  # [1, 4, 32, 28, 28]`,
+
+                'egnn': `import torch
+import torch.nn as nn
+from torch_geometric.nn import MessagePassing
+
+class EGNN_Layer(MessagePassing):
+    """
+    E(n)-Equivariant Graph Neural Network Layer
+    From: "E(n) Equivariant Graph Neural Networks" (Satorras et al., 2021)
+    """
+    def __init__(self, hidden_dim, edge_dim=0):
+        super().__init__(aggr='add')
+        self.hidden_dim = hidden_dim
+        
+        # Edge model (operates on invariant features)
+        self.edge_mlp = nn.Sequential(
+            nn.Linear(2*hidden_dim + edge_dim + 1, hidden_dim),
+            nn.SiLU(),
+            nn.Linear(hidden_dim, hidden_dim)
+        )
+        
+        # Node model
+        self.node_mlp = nn.Sequential(
+            nn.Linear(2*hidden_dim, hidden_dim),
+            nn.SiLU(),
+            nn.Linear(hidden_dim, hidden_dim)
+        )
+        
+        # Coordinate model
+        self.coord_mlp = nn.Sequential(
+            nn.Linear(hidden_dim, hidden_dim),
+            nn.SiLU(),
+            nn.Linear(hidden_dim, 1)
+        )
+    
+    def forward(self, h, x, edge_index, edge_attr=None):
+        """
+        h: [N, hidden_dim] node features (invariant)
+        x: [N, 3] coordinates (equivariant)
+        edge_index: [2, E] edge indices
+        edge_attr: [E, edge_dim] edge attributes (optional)
+        """
+        # Compute messages and update
+        h_out, x_out = self.propagate(edge_index, h=h, x=x, edge_attr=edge_attr)
+        return h_out, x_out
+    
+    def message(self, h_i, h_j, x_i, x_j, edge_attr):
+        # Compute distance (invariant!)
+        dist = torch.norm(x_i - x_j, dim=-1, keepdim=True)
+        
+        # Edge features
+        if edge_attr is not None:
+            edge_input = torch.cat([h_i, h_j, dist, edge_attr], dim=-1)
+        else:
+            edge_input = torch.cat([h_i, h_j, dist], dim=-1)
+        
+        # Compute edge message
+        m_ij = self.edge_mlp(edge_input)
+        
+        return m_ij
+    
+    def aggregate(self, inputs, index, h, x):
+        # Aggregate messages
+        h_agg = scatter(inputs, index, dim=0, reduce='add')
+        
+        # Update node features
+        h_out = h + self.node_mlp(torch.cat([h, h_agg], dim=-1))
+        
+        # Update coordinates (equivariant!)
+        # Use message to weight coordinate updates
+        coord_weights = self.coord_mlp(inputs)
+        x_diff = x[edge_index[0]] - x[edge_index[1]]
+        x_update = scatter(coord_weights * x_diff, edge_index[1], dim=0, reduce='add')
+        x_out = x + x_update
+        
+        return h_out, x_out
+
+# Example: Molecule property prediction
+class MoleculeEGNN(nn.Module):
+    def __init__(self, num_layers=4, hidden_dim=128):
+        super().__init__()
+        self.embedding = nn.Embedding(100, hidden_dim)  # atom types
+        self.layers = nn.ModuleList([
+            EGNN_Layer(hidden_dim) for _ in range(num_layers)
+        ])
+        self.output = nn.Linear(hidden_dim, 1)
+    
+    def forward(self, atom_types, coords, edge_index):
+        h = self.embedding(atom_types)
+        x = coords
+        
+        for layer in self.layers:
+            h, x = layer(h, x, edge_index)
+        
+        # Pool to graph-level
+        h_graph = h.mean(dim=0)
+        return self.output(h_graph)`,
+
+                'irm': `import torch
+import torch.nn as nn
+import torch.optim as optim
+
+class InvariantRiskMinimization:
+    """
+    Invariant Risk Minimization (IRM)
+    From: "Invariant Risk Minimization" (Arjovsky et al., 2019)
+    
+    Goal: Learn representations that work across all environments
+    """
+    def __init__(self, model, environments, penalty_weight=1.0):
+        """
+        model: Neural network (feature extractor + classifier)
+        environments: List of (X, Y) datasets from different environments
+        penalty_weight: How much to penalize environment-specific fitting
+        """
+        self.model = model
+        self.environments = environments
+        self.penalty_weight = penalty_weight
+    
+    def compute_penalty(self, losses, dummy_w):
+        """
+        Compute IRM penalty: ||∇_w R^e(Φ ∘ w)|w=1.0||²
+        
+        Intuition: If a representation is truly invariant, 
+        a dummy classifier (w=1.0) should work in all environments
+        """
+        grad_losses = torch.autograd.grad(
+            losses.sum(), 
+            dummy_w, 
+            create_graph=True
+        )[0]
+        penalty = torch.sum(grad_losses ** 2)
+        return penalty
+    
+    def train_step(self, optimizer):
+        """One training step with IRM objective"""
+        optimizer.zero_grad()
+        
+        total_loss = 0
+        total_penalty = 0
+        
+        # Dummy classifier weight (always 1.0)
+        dummy_w = torch.tensor(1.0, requires_grad=True)
+        
+        for env_data in self.environments:
+            X, Y = env_data
+            
+            # Get features
+            features = self.model.feature_extractor(X)
+            
+            # Apply dummy classifier
+            logits = features * dummy_w
+            
+            # Compute loss for this environment
+            loss = nn.functional.cross_entropy(logits, Y, reduction='none')
+            env_loss = loss.mean()
+            
+            # Compute IRM penalty
+            penalty = self.compute_penalty(loss, dummy_w)
+            
+            total_loss += env_loss
+            total_penalty += penalty
+        
+        # Total objective: empirical risk + penalty
+        objective = total_loss + self.penalty_weight * total_penalty
+        objective.backward()
+        optimizer.step()
+        
+        return total_loss.item(), total_penalty.item()
+
+# Example usage
+class IRMModel(nn.Module):
+    def __init__(self, input_dim, hidden_dim, output_dim):
+        super().__init__()
+        self.feature_extractor = nn.Sequential(
+            nn.Linear(input_dim, hidden_dim),
+            nn.ReLU(),
+            nn.Linear(hidden_dim, hidden_dim)
+        )
+        self.classifier = nn.Linear(hidden_dim, output_dim)
+    
+    def forward(self, x):
+        features = self.feature_extractor(x)
+        return self.classifier(features)
+
+# Create model and environments
+model = IRMModel(input_dim=10, hidden_dim=64, output_dim=2)
+environments = [
+    (torch.randn(100, 10), torch.randint(0, 2, (100,))),  # Env 1
+    (torch.randn(100, 10), torch.randint(0, 2, (100,))),  # Env 2
+    (torch.randn(100, 10), torch.randint(0, 2, (100,))),  # Env 3
+]
+
+irm = InvariantRiskMinimization(model, environments, penalty_weight=10.0)
+optimizer = optim.Adam(model.parameters(), lr=0.001)
+
+# Training loop
+for epoch in range(100):
+    loss, penalty = irm.train_step(optimizer)
+    if epoch % 10 == 0:
+        print(f"Epoch {epoch}: Loss={loss:.3f}, Penalty={penalty:.3f}")`,
+
+                'causal': `import torch
+import torch.nn as nn
+
+class CausalDAGNetwork(nn.Module):
+    """
+    Neural network that respects a causal DAG structure.
+    Can perform interventions (do-operations).
+    """
+    def __init__(self, variables, dag, hidden_dim=64):
+        """
+        variables: list of variable names
+        dag: adjacency matrix [n_vars, n_vars] where dag[i,j]=1 means i→j
+        """
+        super().__init__()
+        self.variables = variables
+        self.dag = dag
+        self.n_vars = len(variables)
+        
+        # Create mechanism (neural net) for each variable
+        self.mechanisms = nn.ModuleDict()
+        for i, var in enumerate(variables):
+            # Count parents
+            parents = dag[:, i].nonzero().squeeze()
+            n_parents = parents.numel() if parents.dim() > 0 else 0
+            
+            # Mechanism: f_i(parents) → variable_i
+            if n_parents > 0:
+                self.mechanisms[str(i)] = nn.Sequential(
+                    nn.Linear(n_parents, hidden_dim),
+                    nn.ReLU(),
+                    nn.Linear(hidden_dim, hidden_dim),
+                    nn.ReLU(),
+                    nn.Linear(hidden_dim, 1)
+                )
+            else:
+                # Root node (no parents) - just learnable distribution
+                self.mechanisms[str(i)] = nn.Parameter(torch.randn(1))
+    
+    def topological_sort(self):
+        """Return variables in topological order"""
+        # Simple topological sort
+        in_degree = self.dag.sum(dim=0)
+        queue = (in_degree == 0).nonzero().squeeze().tolist()
+        if not isinstance(queue, list):
+            queue = [queue]
+        
+        result = []
+        while queue:
+            node = queue.pop(0)
+            result.append(node)
+            
+            # Reduce in-degree of children
+            children = self.dag[node].nonzero().squeeze()
+            if children.numel() > 0:
+                for child in children:
+                    in_degree[child] -= 1
+                    if in_degree[child] == 0:
+                        queue.append(child.item())
+        
+        return result
+    
+    def sample(self, n_samples=1, interventions=None, noise_std=0.1):
+        """
+        Sample from the causal model
+        
+        interventions: dict {variable_index: value} for do-operations
+        Returns: dict {variable_index: tensor of values}
+        """
+        if interventions is None:
+            interventions = {}
+        
+        values = {}
+        order = self.topological_sort()
+        
+        for var_idx in order:
+            if var_idx in interventions:
+                # Do-operation: set value directly
+                values[var_idx] = interventions[var_idx].expand(n_samples, 1)
+            else:
+                # Compute from parents
+                parents = self.dag[:, var_idx].nonzero().squeeze()
+                
+                if parents.numel() == 0:
+                    # Root node
+                    mean = self.mechanisms[str(var_idx)]
+                    values[var_idx] = mean + noise_std * torch.randn(n_samples, 1)
+                else:
+                    # Get parent values
+                    if parents.dim() == 0:
+                        parents = [parents.item()]
+                    else:
+                        parents = parents.tolist()
+                    
+                    parent_values = torch.cat([values[p] for p in parents], dim=1)
+                    
+                    # Apply mechanism
+                    mean = self.mechanisms[str(var_idx)](parent_values)
+                    values[var_idx] = mean + noise_std * torch.randn(n_samples, 1)
+        
+        return values
+    
+    def forward(self, n_samples=1):
+        """Sample without interventions"""
+        return self.sample(n_samples)
+
+# Example: Simple causal chain X → Y → Z
+variables = ['X', 'Y', 'Z']
+dag = torch.tensor([
+    [0, 1, 0],  # X → Y
+    [0, 0, 1],  # Y → Z
+    [0, 0, 0]   # Z has no children
+], dtype=torch.float)
+
+model = CausalDAGNetwork(variables, dag)
+
+# Observational sampling
+obs_samples = model.sample(n_samples=100)
+print("Observational samples:")
+print(f"X mean: {obs_samples[0].mean():.2f}")
+print(f"Y mean: {obs_samples[1].mean():.2f}")
+print(f"Z mean: {obs_samples[2].mean():.2f}")
+
+# Interventional sampling: do(Y = 5.0)
+int_samples = model.sample(
+    n_samples=100, 
+    interventions={1: torch.tensor([[5.0]])}
+)
+print("\\nInterventional samples (do(Y=5.0)):")
+print(f"X mean: {int_samples[0].mean():.2f}")  # X unchanged
+print(f"Y mean: {int_samples[1].mean():.2f}")  # Y forced to 5.0
+print(f"Z mean: {int_samples[2].mean():.2f}")  # Z affected by intervention`
+            };
+            
+            display.style.display = 'block';
+            copyBtn.style.display = 'block';
+            display.innerHTML = `<pre style="background: #1e293b; color: #e2e8f0; padding: 20px; border-radius: 8px; overflow-x: auto;">${codes[code]}</pre>`;
+        }
+        
+        function copyCodeToClipboard() {
+            const code = document.getElementById('codeSelect').value;
+            const codes = {
+                'e2conv': document.querySelector('#codeDisplay pre').textContent,
+                'egnn': document.querySelector('#codeDisplay pre').textContent,
+                'irm': document.querySelector('#codeDisplay pre').textContent,
+                'causal': document.querySelector('#codeDisplay pre').textContent
+            };
+            
+            navigator.clipboard.writeText(codes[code] || '').then(() => {
+                const btn = document.getElementById('copyCode');
+                const originalText = btn.textContent;
+                btn.textContent = '✓ Copied!';
+                btn.style.background = '#10b981';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.style.background = '';
+                }, 2000);
+            });
+        }
+        
+        function generateArchitecture() {
+            const domain = document.getElementById('designDomain').value;
+            const symmetry = document.getElementById('designSymmetry').value;
+            const causal = document.getElementById('designCausal').checked;
+            
+            const architectures = {
+                'images-translation': {
+                    name: 'Translation-Equivariant CNN',
+                    layers: ['Conv2d', 'ReLU', 'Conv2d', 'ReLU', 'AdaptivePool'],
+                    group: 'Translation group (ℤ² or ℝ²)'
+                },
+                'images-rotation': {
+                    name: 'Rotation-Equivariant Network',
+                    layers: ['E2Conv (4 rotations)', 'ReLU', 'E2Conv', 'MaxPool over rotations'],
+                    group: 'Cyclic group C4 or SO(2)'
+                },
+                'graphs-permutation': {
+                    name: 'Graph Neural Network',
+                    layers: ['GCNConv', 'ReLU', 'GCNConv', 'GlobalPool'],
+                    group: 'Permutation group Sn'
+                },
+                'molecules-rotation': {
+                    name: 'E(3)-Equivariant Network',
+                    layers: ['EGNN_Layer', 'EGNN_Layer', 'EGNN_Layer', 'GlobalMeanPool'],
+                    group: 'Euclidean group E(3)'
+                },
+                'time-translation': {
+                    name: 'Temporal Convolutional Network',
+                    layers: ['CausalConv1d', 'ReLU', 'CausalConv1d', 'GlobalPool'],
+                    group: 'Time-shift group (ℝ or ℤ)'
+                }
+            };
+            
+            const key = `${domain}-${symmetry}`;
+            const arch = architectures[key] || {
+                name: 'Custom Architecture',
+                layers: ['EquivariantLayer', 'NonLinearity', 'EquivariantLayer'],
+                group: 'Custom symmetry group'
+            };
+            
+            const result = document.getElementById('archGenerated');
+            result.style.display = 'block';
+            
+            let html = `
+                <strong>Generated Architecture: ${arch.name}</strong><br>
+                <strong>Symmetry Group:</strong> ${arch.group}<br><br>
+                <strong>Layer Stack:</strong><br>
+            `;
+            
+            arch.layers.forEach((layer, i) => {
+                html += `${i+1}. ${layer}<br>`;
+            });
+            
+            if (causal) {
+                html += `<br><strong>Causal Extensions:</strong><br>`;
+                html += `• Add causal mask to attention layers<br>`;
+                html += `• Respect temporal/DAG ordering<br>`;
+                html += `• Enable do-operation intervention<br>`;
+            }
+            
+            html += `<br><strong>Key Properties:</strong><br>`;
+            html += `• Equivariant to ${symmetry} transformations<br>`;
+            html += `• Reduced parameter count (weight sharing via symmetry)<br>`;
+            html += `• Better generalization through inductive bias<br>`;
+            
+            if (causal) {
+                html += `• Supports interventional queries<br>`;
+            }
+            
+            result.innerHTML = html;
+        }
+    </script>
+</body>
+</html>
