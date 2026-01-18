@@ -951,6 +951,157 @@ treatment_effect = est.effect(X_test)
 
 ---
 
+## 🧠 Grokking: Delayed Generalization in Neural Networks
+
+### What is Grokking?
+
+**Grokking** (Power et al., 2022) is a phenomenon where a neural network:
+1. First **memorizes** the training data (train loss → 0, test loss stays high)
+2. Then, after extended training, **suddenly generalizes** (test loss drops dramatically)
+
+This is counterintuitive because normally we'd stop training when test loss starts rising (overfitting). Grokking shows that continued training can sometimes lead to a phase transition where the model discovers the underlying algorithm.
+
+### When Does Grokking Occur?
+
+Grokking requires specific conditions:
+
+| Condition | Why It Matters |
+|-----------|----------------|
+| **Finite discrete input/output space** | Makes memorization a viable strategy (lookup table) |
+| **Underlying algebraic structure** | A compact rule exists that's simpler than memorization |
+| **Small dataset** | Forces tension between memorization and generalization |
+| **Weight decay (regularization)** | Slowly penalizes complex memorization solution |
+| **Extended training** | 10x-100x more epochs than needed to memorize |
+
+### Tasks Where Grokking Has Been Observed
+
+- **Modular arithmetic**: (a + b) mod p, (a × b) mod p
+- **Permutation composition**: Symmetric group operations
+- **Sparse parity**: XOR of subset of bits
+- **Group operations**: Various finite algebraic structures
+
+The common thread: **structured discrete problems where the true solution is more compressible than brute memorization**.
+
+### Why Grokking Happens: The Mechanistic View
+
+```
+Training Timeline:
+├─ Phase 1: Memorization (fast)
+│   └─ Model stores lookup table
+│   └─ Train loss → 0, Test loss high
+│   └─ High-norm solution
+│
+├─ Phase 2: Extended training (slow)
+│   └─ Weight decay penalizes complexity
+│   └─ Model "searches" for simpler solution
+│
+└─ Phase 3: Grokking (sudden)
+    └─ Model discovers the algorithm
+    └─ Test loss drops dramatically
+    └─ Low-norm, generalizing solution
+```
+
+**Key insight**: Weight decay gradually penalizes the high-norm memorization solution until the loss landscape favors the lower-norm generalizing solution. Grokking is the phase transition between these regimes.
+
+### When Grokking Does NOT Occur
+
+Grokking is **unlikely** in:
+
+1. **Continuous regression tasks** (e.g., time series forecasting)
+   - No discrete algorithm to discover
+   - "Memorization" vs "generalization" exist on a spectrum
+
+2. **Large datasets**
+   - Memorization becomes impractical
+   - Normal generalization happens during training
+
+3. **Tasks with inherent noise**
+   - No perfect solution exists
+   - Irreducible error floor prevents sharp phase transition
+
+4. **Tasks without compressible structure**
+   - The true function isn't simpler than a lookup table
+
+### Example: Why CausalTemporalNetwork Won't Grok
+
+The time series forecasting model in this repository has:
+- **Continuous outputs** (y ∈ ℝ, not finite set)
+- **Noise in data generation** (irreducible error)
+- **No discrete algorithm** to discover
+
+Even though time `t` is discrete, the model operates over continuous real numbers. There's no phase transition between "memorizing the training set" and "learning the autoregressive coefficients" - just normal gradient descent finding the optimal linear approximation.
+
+### Experimenting with Grokking
+
+To observe grokking yourself:
+
+```python
+import torch
+import torch.nn as nn
+
+def generate_modular_addition_data(p=97, frac_train=0.3):
+    """Generate (a + b) mod p dataset"""
+    data = []
+    for a in range(p):
+        for b in range(p):
+            data.append((a, b, (a + b) % p))
+
+    # Small training set (key for grokking!)
+    n_train = int(len(data) * frac_train)
+    train = data[:n_train]
+    test = data[n_train:]
+    return train, test, p
+
+class ModularMLP(nn.Module):
+    def __init__(self, p, hidden=128):
+        super().__init__()
+        self.embed_a = nn.Embedding(p, hidden)
+        self.embed_b = nn.Embedding(p, hidden)
+        self.mlp = nn.Sequential(
+            nn.Linear(hidden * 2, hidden),
+            nn.ReLU(),
+            nn.Linear(hidden, hidden),
+            nn.ReLU(),
+            nn.Linear(hidden, p)
+        )
+
+    def forward(self, a, b):
+        return self.mlp(torch.cat([self.embed_a(a), self.embed_b(b)], dim=-1))
+
+# Train with weight decay and LOTS of epochs
+optimizer = torch.optim.AdamW(model.parameters(), lr=1e-3, weight_decay=1.0)
+
+# Train for 10000+ epochs to observe grokking
+# You'll see: train acc → 100% early, test acc stays ~1/p
+# Then suddenly: test acc jumps to ~100%
+```
+
+### Key Papers on Grokking
+
+1. **"Grokking: Generalization Beyond Overfitting on Small Algorithmic Datasets"**
+   - Power et al., 2022
+   - Original discovery paper
+
+2. **"Progress Measures for Grokking via Mechanistic Interpretability"**
+   - Neel Nanda et al., 2023
+   - Explains internal mechanism (Fourier basis learning)
+
+3. **"Grokking as Compression"**
+   - Various authors, 2023
+   - Information-theoretic perspective
+
+### Summary
+
+| Aspect | Standard Learning | Grokking |
+|--------|------------------|----------|
+| Generalization | During training | After memorization |
+| Test loss curve | Decreases then rises | Stays high, then drops suddenly |
+| Required training | Until early stopping | Far beyond memorization |
+| Task type | Any | Discrete, structured |
+| Key enabler | Data quantity | Weight decay + patience |
+
+---
+
 ## 📚 Essential Papers
 
 ### Must Read (Top 10)
