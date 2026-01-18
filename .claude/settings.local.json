@@ -11,7 +11,9 @@
       "Bash(git remote set-url:*)",
       "Bash(ssh-keygen:*)",
       "Bash(ssh:*)",
-      "Bash(git fetch:*)"
+      "Bash(git fetch:*)",
+      "Bash(git config:*)",
+      "Bash(ssh-add:*)"
     ]
   }
 }
